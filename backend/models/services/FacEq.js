@@ -1,6 +1,5 @@
-import db from "..";
-import { sequelize } from "../../utils/database";
-import { Op } from "sequelize";
+import db from "../index.js";
+
 
 const InsertNewFac = async (Sport, Name, Location, Type ) => {
     try{
@@ -33,7 +32,7 @@ const InsertNewEquipment = async (Name, Sport, StockCount) => {
 };
 
 
-const deleteEquipment = async (EqId) => {
+const deleteEquip = async (EqId) => {
     const check = await db.Equipment.findOne({
         where: {EqId: EqId}
     });
@@ -48,7 +47,7 @@ const deleteEquipment = async (EqId) => {
     }
 };
 
-const deleteFacility = async (Fid) => {
+const deleteFac = async (Fid) => {
     const check = await db.Facility.findOne({
         where: {Fid: Fid}
     });
@@ -63,7 +62,7 @@ const deleteFacility = async (Fid) => {
     }
 };
 
-const updateEquipment = async (EqId, Name, Sport, StockCount, StatusReserved, StatusAvailable, StatusBooked) => {
+const updateEq = async (EqId, Name, Sport, StockCount, StatusReserved, StatusAvailable, StatusBooked) => {
     const check = await db.Equipment.findOne({
         where: {EqId: EqId}
     });
@@ -83,7 +82,7 @@ const updateEquipment = async (EqId, Name, Sport, StockCount, StatusReserved, St
     }
 };
 
-const updateFacility = async (Fid, Name, Sport, Location, Type, Status) => {    
+const updateFac = async (Fid, Name, Sport, Location, Type, Status) => {    
     const check = await db.Facility.findOne({
         where: {Fid: Fid}
     });
@@ -102,7 +101,7 @@ const updateFacility = async (Fid, Name, Sport, Location, Type, Status) => {
     }
 };
 
-export {InsertNewEquipment, InsertNewFac, deleteEquipment, deleteFacility};
+export {InsertNewEquipment, InsertNewFac, deleteEquip, deleteFac, updateEq, updateFac};
 
 
 
