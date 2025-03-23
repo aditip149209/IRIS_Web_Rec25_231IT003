@@ -1,6 +1,5 @@
 import { Sequelize } from "sequelize";
 
-
 import configInfo from "./db.config.js";
 
 const sequelize = new Sequelize(
@@ -13,6 +12,8 @@ const sequelize = new Sequelize(
         logging: console.log,
     }
 );
+
+
 
 const connectDB = async () => {
     try {

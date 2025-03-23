@@ -4,44 +4,41 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { sequelize } from './utils/database.js';
 import { connectDB } from './utils/database.js';
-import './models/UserTable.js';
-import './models/NotificationTable.js';
-import './models/BookingTable.js';
-import './models/EquipmentTable.js';
-import { Router } from 'express';
+import db from './models/index.js';
 
 
+const app = express();
 
-
-const app = express()
-
-//sync tables using sequelize 
-connectDB();
-sequelize.sync({force: true}).then( () => {
-    console.log('Database and tables synced');
-})
-
-//middleware
+// Middleware
 app.use(express.json());
 app.use(cors());
 
-//routes
-// app.post('/api', regRoute);
+// Function to start the server properly
+const startServer = async () => {
+    try {
+        connectDB();
+        // Start the server after everything is ready
+        const PORT = process.env.PORT || 3001;
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('❌ Error starting the server:', error);
+        process.exit(1); // Exit the process if there's a failure
+    }
+};
+
+// Call the function to start everything
+startServer();
+
+// Routes
 import router from './routes/authRoutes.js';
 app.use('/api/auth', router);
 
-// app.post('/api', loginRoute);
 import routerUser from './routes/userRoutes.js';
-app.use('/api/module',routerUser);
+app.use('/api/module', routerUser);
 
 import eqRouter from './routes/eqRoutes.js';
 app.use('/api/manage', eqRouter);
 
-import adminRouter from './routes/adminRoutes.js';
-app.use('/api/admin',adminRouter);
-
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () =>{
-    console.log(`server running on ${PORT} lol`);
-})
 

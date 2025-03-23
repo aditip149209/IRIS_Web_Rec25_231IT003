@@ -1,49 +1,145 @@
+import db from "../models/index.js";
+import { sequelize } from "../utils/database.js";
+import { Op } from "sequelize";
+import {findBooking, newBooking, getBooking, deleteBooking} from "../models/services/makeBooking.js";
+import { checkEquipmentAvailability } from "./checkController.js";
+import { deleteEqBooking, createEqBooking, showEqBooking } from "../models/services/EqBooking.js";
+
 const studentBoard = (req,res) => {
     return res.status(200).json({
-        "message" : "this is the student endpoint, accessible to both students and admins"
+        "message" : "this is the stud endpoint, accessible to both students and admins"
     });
 };
 
-const bookNew = (req, res) => {
+const bookNew = async (req, res) => {
     try {
-        const { username, equipmentname, facilityname } = req.body;
-        console.log(req.body);
-        console.log(req.user.role);
-        console.log(`supposed to do something with the ${username} and ${equipmentname} and ${facilityname} first testing endpoint`);
-        return res.status(200).json({
-            message: "booking confirmed",
-        });
+        const { userId, facilityId, sport, date, startTime } = req.body;
+
+        if (!userId || !facilityId || !sport || !date || !startTime) {
+            return res.status(400).json({ message: "Missing required fields: userId, facilityId, sport, date, startTime" });
+        }
+
+        const endTime = new Date(`1970-01-01T${startTime}`);
+        endTime.setHours(endTime.getHours() + 1);
+        const formattedEndTime = endTime.toTimeString().split(" ")[0];
+
+        const existingBooking = await findBooking(userId, facilityId, sport, date, startTime);
+
+        if (existingBooking) {
+            return res.status(400).json({ message: "Facility is already booked for this time slot" });
+        }
+
+        const newBook = await newBooking(userId, facilityId, sport, date, startTime, formattedEndTime);
+
+
+        res.json({ message: "Booking successful", booking: newBook});
+
     } catch (error) {
         console.error(error);
-        return res.status(500).json({
-            message: "An error occurred while processing your request.",
-        });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 
-const getCurrentBookings = (req,res) => {
+const getBookings = async (req,res) => {
     console.log("supposed to show yours current bookings from the bookings table lol");
+    try{
+    const {uid} = req.body;
+
+    if(!uid){
+        return res.status(400).json({ message: "Missing required fields: uid" });
+    };
+
+    const bookings = await getBooking(uid);
+    console.log(bookings);
     return res.status(200).json({
         message: "showing all current bookings",
+        bookings
     });
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
 }; 
 
+const deletebooking = async (req,res) => {
+    try{
+        const {bookingId} = req.body;
+        if(!bookingId){
 
-const getPastBooking = (req,res) => {
-    console.log("supposed to show past bookings");
-    return res.status(200).json({
-        message: "showing all previous bookings",
-    });
+            return res.status(400).json({ message: "Missing required fields: bookingId" });
+        }
+        const booking = await deleteBooking(bookingId);
+        return res.status(200).json({
+            message: "Booking deleted successfully",
+            booking
+        });
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
 
-const deletebooking = (req,res) => {
-    const {bookingid} = req.body;
-    console.log(`supposed to cancel booking with booking id ${bookingid}`);
-    return res.status(200).json({
-        message: "successfully deleted booking",
-    });
+const bookEquipment = async (req,res) => {
+    try{
+        const {Uid, EqID, Quantity, StartDate, EndDate} = req.body;
+        if(!Uid || !EqID || !Quantity || !StartDate || !EndDate){
+            return res.status(400).json({ message: "Check required fields for missing values: Uid, EqID, Quantity, StartDate, EndDate" });
+        }
+        const check = await checkEquipmentAvailability(EqID, Quantity, StartDate, EndDate);
+        if(check.success){
+            try{const booking = await createEqBooking(Uid, EqID, Quantity, StartDate, EndDate);
+            return res.status(200).json({
+                message: "Equipment booked successfully",
+                booking
+            })}
+            catch(error){
+                console.error(error);
+                res.status(500).json({ message: "Server error" });
+            }
+        }
+        else{
+            return res.status(400).json({ message: check.message });
+        }
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
-export {studentBoard, bookNew, getCurrentBookings, getPastBooking, deletebooking};
+const getEqBookings = async (req, res) => {
+    try{
+        const {uid} = req.body;
+        const bookings = await showEqBooking(uid);
+        return res.status(200).json({
+            message: "showing all current equipment bookings",
+            bookings
+        });
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+const deleteEqBookings = async (req, res) => {
+    try{
+        const {bookingId} = req.body;
+        const booking = await deleteEqBooking(bookingId);
+        return res.status(200).json({
+            message: "Equipment booking deleted successfully",
+            booking
+        });
+    }
+    catch(error){
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }   
+};
+
+export {studentBoard, bookNew, getBookings, deletebooking, bookEquipment, getEqBookings, deleteEqBookings};
+
