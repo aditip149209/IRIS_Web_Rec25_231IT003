@@ -1,7 +1,7 @@
 import db from "../models/index.js";
 import { sequelize } from "../utils/database.js";
 import { Op } from "sequelize";
-import {findBooking, newBooking, getBooking, deleteBooking} from "../models/services/makeBooking.js";
+import {findBooking, newBooking, getBooking, cancelBooking} from "../models/services/makeBooking.js";
 import { checkEquipmentAvailability } from "./checkController.js";
 import { deleteEqBooking, createEqBooking, showEqBooking } from "../models/services/EqBooking.js";
 
@@ -53,7 +53,6 @@ const bookNew = async (req, res) => {
 
         const newBook = await newBooking(userId, facilityId, sport, date, startTime, formattedEndTime);
 
-
         res.json({ message: "Booking successful", booking: newBook});
 
     } catch (error) {
@@ -61,7 +60,6 @@ const bookNew = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
 
 const getBookings = async (req,res) => {
     console.log("supposed to show yours current bookings from the bookings table lol");
@@ -92,15 +90,17 @@ const deletebooking = async (req,res) => {
 
             return res.status(400).json({ message: "Missing required fields: bookingId" });
         }
-        const booking = await deleteBooking(bookingId);
+        const booking = await cancelBooking(bookingId);
         return res.status(200).json({
             message: "Booking deleted successfully",
             booking
         });
     }
     catch(error){
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        console.error("Error in deletebooking:" ,error.message);
+        res.status(500).json({ message: error.message
+            
+         });
     }
 };
 

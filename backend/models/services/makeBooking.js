@@ -66,50 +66,61 @@ const getWaitedBooking = async (facilityId, date, startTime, endTime) => {
     }
 };
 
-const deleteBooking = async (bookingId, facilityId, startTime, endTime, date) => {
+const cancelBooking = async (bookingId) => {
     try {
-        const booking = await db.Bookings.destroy({
-            where: {
-                id: bookingId
-            }
-        });
-        waitlistedBooking = await getWaitedBooking(facilityId, date, startTime, endTime);
-        if (waitlistedBooking) {
+        if (!bookingId) {
+            throw new Error("Booking ID is required");
+        }
+
+        // Find the booking to be canceled
+        const booking = await db.Bookings.findByPk(bookingId);
+
+        if (!booking) {
+            throw new Error("Booking not found");
+        }
+
+        const { facilityId, date, startTime, endTime } = booking;
+
+        // Delete the booking
+        await db.Bookings.destroy({ where: { id: bookingId } });
+
+        // Check for waitlisted users for this slot
+        const waitlistedUser = await getWaitedBooking(facilityId, date, startTime, endTime);
+
+        if (waitlistedUser) {
+            // Convert waitlist entry into a confirmed booking
             const newBooking = await db.Bookings.create({
                 userId: waitlistedUser.Uid,
                 facilityId: waitlistedUser.FacId,
-                sport: null,  // Add sport data if required
+                sport: null, // Add sport data if required
                 date: date,
                 startTime: startTime,
                 endTime: endTime,
                 createdAt: new Date(),
             });
+
+            // Remove user from waitlist
+            await db.Waitlist.destroy({ where: { id: waitlistedUser.id } });
+
+            // Send notification
             await db.Notification.create({
-                Uid: waitlistedBooking.studentId,
-                Message: "Your waitlisted booking is now confirmed.",
-                Status: "unread"
+                userId: waitlistedUser.Uid,
+                message: `Your waitlisted slot for ${date} at ${startTime} has been confirmed! 🎉`,
+                createdAt: new Date(),
             });
-            await db.Waitlist.destroy({
-                where: {
-                    id: waitlistedBooking.id
-                }
-            });
-            return res.status(200).json({ message: "Booking deleted successfully, waitlisted user booking confirmed" });
+
+            return {
+                message: "Booking canceled, and the waitlisted user has been allocated the slot.",
+                newBooking,
+            };
         }
 
-        const delBookingRip = await db.Bookings.destroy({
-            where: {
-                id: bookingId
-            }
-        });
-
-        return res.Status(200).json({ message: "Booking deleted successfully" });   
-        
-
+        return { message: "Booking canceled successfully. No waitlisted users for this slot." };
     } catch (error) {
-        console.error("Error deleting booking:", error);
+        console.error("Error in cancelBooking:", error);
+        throw error; // Throw the error to be handled by the controller
     }
-}
+};
 
-export {findBooking, newBooking, deleteBooking, getBooking};
+export {findBooking, newBooking, cancelBooking, getBooking};
 
