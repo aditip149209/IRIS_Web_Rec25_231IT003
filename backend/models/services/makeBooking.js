@@ -51,10 +51,10 @@ const getBooking = async (uid) => {
 
 const getWaitedBooking = async (facilityId, date, startTime, endTime) => {
     try {
-        const booking = await db.Bookings.findOne({
+        const booking = await db.Waitlist.findOne({
             where: {
-                facilityId,
-                date,
+                FacId: facilityId,
+                Date: date,
                 startTime,
                 endTime
             },
@@ -86,13 +86,16 @@ const cancelBooking = async (bookingId) => {
 
         // Check for waitlisted users for this slot
         const waitlistedUser = await getWaitedBooking(facilityId, date, startTime, endTime);
+        const sportname = await db.Facility.findOne({
+            where: {Fid: facilityId}
+        });
 
         if (waitlistedUser) {
             // Convert waitlist entry into a confirmed booking
             const newBooking = await db.Bookings.create({
-                userId: waitlistedUser.Uid,
+                studentId: waitlistedUser.Uid,
                 facilityId: waitlistedUser.FacId,
-                sport: null, // Add sport data if required
+                Sport: sportname.sport, // Add sport data if required
                 date: date,
                 startTime: startTime,
                 endTime: endTime,
@@ -100,13 +103,16 @@ const cancelBooking = async (bookingId) => {
             });
 
             // Remove user from waitlist
-            await db.Waitlist.destroy({ where: { id: waitlistedUser.id } });
+            await db.Waitlist.destroy({ where: { Uid: waitlistedUser.Uid } });
+
 
             // Send notification
             await db.Notification.create({
-                userId: waitlistedUser.Uid,
-                message: `Your waitlisted slot for ${date} at ${startTime} has been confirmed! 🎉`,
+                Uid: waitlistedUser.Uid,
+                Message: `Your waitlisted slot for ${date} at ${startTime} has been confirmed! 🎉`,
+                BookingId: waitlistedUser.Uid,
                 createdAt: new Date(),
+                Status: 'pending'
             });
 
             return {

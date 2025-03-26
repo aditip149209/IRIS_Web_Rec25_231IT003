@@ -52,8 +52,7 @@ const seedDatabase = async () => {
             { Ename: "Gym Weights", Sport: "Gym", StatusAvailable: 20, StockCount: 20, UsageCount: 10 },
             { Ename: "Swimming Goggles", Sport: "Swimming", StatusAvailable: 12, StockCount: 12, UsageCount: 4 }
         ];
-        
-
+    
         const createdEquipment = await db.Equipment.bulkCreate(equipment);
         db.Equipment.update({ StatusAvailable : Sequelize.literal('StockCount')
         }, { where: { } });
@@ -82,9 +81,24 @@ const seedDatabase = async () => {
 
         // Seed Notifications
         const notifications = [
-            { Uid: createdUsers[0].Uid, Message: "Your basketball booking is confirmed.", Status: "unread" },
-            { Uid: createdUsers[1].Uid, Message: "Your football booking is confirmed.", Status: "unread" },
-            { Uid: createdUsers[2].Uid, Message: "Your tennis booking is pending approval.", Status: "unread" }
+            { 
+                Uid: createdUsers[0].Uid, 
+                BookingId: bookings[0].studentId, // Associate with the first booking
+                Message: "Your basketball booking is confirmed.", 
+                Status: "pending" 
+            },
+            { 
+                Uid: createdUsers[1].Uid, 
+                BookingId: bookings[1].studentId, // Associate with the second booking
+                Message: "Your football booking is confirmed.", 
+                Status: "pending" 
+            },
+            { 
+                Uid: createdUsers[2].Uid, 
+                BookingId: bookings[2].studentId, // Associate with the third booking
+                Message: "Your tennis booking is pending approval.", 
+                Status: "pending" 
+            }
         ];
 
         await db.Notification.bulkCreate(notifications);
@@ -103,8 +117,8 @@ const seedDatabase = async () => {
 
         // Seed Waitlist
         const waitlist = [
-            { Uid: createdUsers[0].Uid, EqId: createdEquipment[3].EqId, FacId: createdFacilities[0].Fid, startTime: "10:00:00" , endTime: "11:00:00", CreationTime: "2025-03-24" },
-            { Uid: createdUsers[1].Uid, EqId: createdEquipment[4].EqId, FacId: createdFacilities[1].Fid, startTime: "17:00:00", endTime: "18:00:00", CreationTime: "2025-03-25" }
+            { Uid: createdUsers[0].Uid, EqId: createdEquipment[3].EqId, FacId: createdFacilities[0].Fid, Date: "2025-03-24", startTime: "10:00:00" , endTime: "11:00:00", CreationTime: "2025-03-24" },
+            { Uid: createdUsers[1].Uid, EqId: createdEquipment[4].EqId, FacId: createdFacilities[1].Fid, Date: "2025-03-25", startTime: "17:00:00", endTime: "18:00:00", CreationTime: "2025-03-25" }
         ];
         
 

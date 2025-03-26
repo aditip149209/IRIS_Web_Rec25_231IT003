@@ -54,8 +54,11 @@ const Bookings = sequelize.define('Bookings', {
 
 const Notification = sequelize.define('Notification', {
     Nid: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    Uid: { type: DataTypes.INTEGER, allowNull: false, references: { model: Users, key: 'Uid' } },
+    BookingId: { type: DataTypes.INTEGER, allowNull: false, references: { model: Bookings, key: 'id' } },
+    sendTime: {type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW},
     Message: { type: DataTypes.TEXT, allowNull: false },
-    Status: { type: DataTypes.ENUM('unread', 'read'), defaultValue: 'unread' }
+    Status: { type: DataTypes.ENUM('pending','sent'), defaultValue: 'pending'}
 }, { timestamps: true });
 
 const Penalties = sequelize.define('Penalties', {
@@ -71,6 +74,7 @@ const Waitlist = sequelize.define('Waitlist', {
     Wid: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     Uid: { type: DataTypes.INTEGER, allowNull: false, references: { model: Users, key: 'Uid' } },
     FacId: { type: DataTypes.INTEGER, allowNull: false, references: { model: Facility, key: 'Fid' } },
+    Date: { type: DataTypes.DATEONLY, allowNull: false },
     startTime: { type: DataTypes.TIME, allowNull: false },
     endTime: { type: DataTypes.TIME, allowNull: false },    
     CreationTime: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
@@ -95,11 +99,16 @@ Bookings.belongsTo(Facility, { foreignKey: 'Fid' });
 Users.hasMany(Notification, { foreignKey: 'Uid', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Notification.belongsTo(Users, { foreignKey: 'Uid', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
+Notification.belongsTo(Bookings, { foreignKey: 'BookingId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Bookings.hasMany(Notification, { foreignKey: 'BookingId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+
 Users.hasMany(Waitlist, { foreignKey: 'Uid' });
 Waitlist.belongsTo(Users, { foreignKey: 'Uid' });
 
 Facility.hasMany(Waitlist, { foreignKey: 'FacId' });
 Waitlist.belongsTo(Facility, { foreignKey: 'FacId' });
+
+
 
 const db = { sequelize, Users, Equipment, BookingEquipment, Facility, Bookings, Notification, Penalties, Waitlist };
 export default db;
