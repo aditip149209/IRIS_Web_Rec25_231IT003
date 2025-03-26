@@ -70,7 +70,9 @@ const Penalties = sequelize.define('Penalties', {
 const Waitlist = sequelize.define('Waitlist', {
     Wid: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     Uid: { type: DataTypes.INTEGER, allowNull: false, references: { model: Users, key: 'Uid' } },
-    EqId: { type: DataTypes.INTEGER, allowNull: false, references: { model: Equipment, key: 'EqId' } },
+    FacId: { type: DataTypes.INTEGER, allowNull: false, references: { model: Facility, key: 'Fid' } },
+    startTime: { type: DataTypes.TIME, allowNull: false },
+    endTime: { type: DataTypes.TIME, allowNull: false },    
     CreationTime: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 });
 
@@ -84,8 +86,8 @@ BookingEquipment.belongsTo(Equipment, { foreignKey: "EqId" });
 Users.hasMany(Penalties, { foreignKey: 'Uid' });
 Penalties.belongsTo(Users, { foreignKey: 'Uid' });
 
-Users.hasMany(Bookings, { foreignKey: 'Uid' });
-Bookings.belongsTo(Users, { foreignKey: 'Uid' });
+Users.hasMany(Bookings, { foreignKey: 'studentId' });
+Bookings.belongsTo(Users, { foreignKey: 'studentId' });
 
 Facility.hasMany(Bookings, { foreignKey: 'Fid' });
 Bookings.belongsTo(Facility, { foreignKey: 'Fid' });
@@ -96,8 +98,8 @@ Notification.belongsTo(Users, { foreignKey: 'Uid', onDelete: 'CASCADE', onUpdate
 Users.hasMany(Waitlist, { foreignKey: 'Uid' });
 Waitlist.belongsTo(Users, { foreignKey: 'Uid' });
 
-Equipment.hasMany(Waitlist, { foreignKey: 'EqId' });
-Waitlist.belongsTo(Equipment, { foreignKey: 'EqId' });
+Facility.hasMany(Waitlist, { foreignKey: 'FacId' });
+Waitlist.belongsTo(Facility, { foreignKey: 'FacId' });
 
 const db = { sequelize, Users, Equipment, BookingEquipment, Facility, Bookings, Notification, Penalties, Waitlist };
 export default db;

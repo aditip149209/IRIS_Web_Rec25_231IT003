@@ -49,14 +49,63 @@ const getBooking = async (uid) => {
     }
 }
 
-const deleteBooking = async (bookingId) => {
+const getWaitedBooking = async (facilityId, date, startTime, endTime) => {
+    try {
+        const booking = await db.Bookings.findOne({
+            where: {
+                facilityId,
+                date,
+                startTime,
+                endTime
+            },
+            order: [['CreationTime', 'ASC']] // Sort by CreationTime (earliest first)
+        });
+        return booking;
+    } catch (error) {
+        console.error("Error fetching waited booking:", error);
+    }
+};
+
+const deleteBooking = async (bookingId, facilityId, startTime, endTime, date) => {
     try {
         const booking = await db.Bookings.destroy({
             where: {
                 id: bookingId
             }
         });
-        return booking;
+        waitlistedBooking = await getWaitedBooking(facilityId, date, startTime, endTime);
+        if (waitlistedBooking) {
+            const newBooking = await db.Bookings.create({
+                userId: waitlistedUser.Uid,
+                facilityId: waitlistedUser.FacId,
+                sport: null,  // Add sport data if required
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                createdAt: new Date(),
+            });
+            await db.Notification.create({
+                Uid: waitlistedBooking.studentId,
+                Message: "Your waitlisted booking is now confirmed.",
+                Status: "unread"
+            });
+            await db.Waitlist.destroy({
+                where: {
+                    id: waitlistedBooking.id
+                }
+            });
+            return res.status(200).json({ message: "Booking deleted successfully, waitlisted user booking confirmed" });
+        }
+
+        const delBookingRip = await db.Bookings.destroy({
+            where: {
+                id: bookingId
+            }
+        });
+
+        return res.Status(200).json({ message: "Booking deleted successfully" });   
+        
+
     } catch (error) {
         console.error("Error deleting booking:", error);
     }

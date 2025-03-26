@@ -13,7 +13,7 @@ const studentBoard = (req,res) => {
 
 const bookNew = async (req, res) => {
     try {
-        const { userId, facilityId, sport, date, startTime } = req.body;
+        const { userId, facilityId, sport, date, startTime, confirmBooking, confirmWaitlist } = req.body;
 
         if (!userId || !facilityId || !sport || !date || !startTime) {
             return res.status(400).json({ message: "Missing required fields: userId, facilityId, sport, date, startTime" });
@@ -26,7 +26,29 @@ const bookNew = async (req, res) => {
         const existingBooking = await findBooking(userId, facilityId, sport, date, startTime);
 
         if (existingBooking) {
-            return res.status(400).json({ message: "Facility is already booked for this time slot" });
+
+            if(!confirmWaitlist){
+                return res.status(409).json({ message: "Facility is already booked for this time slot, confirm joining waitlist" ,
+                    waitlistOption: true
+                });                            
+
+            }
+            
+            const waitBooking = await db.Waitlist.create({
+                Uid: userId,
+                FacId: facilityId,
+                EqId: null,
+                startTime: startTime,
+                endTime: formattedEndTime,
+                CreationTime: new Date()
+            });
+            return res.status(201).json({ message: "Added to waitlist"});
+        }
+
+        if(!confirmBooking){
+            return res.status(409).json({ message: "Facility is available for booking, confirm booking" ,
+                bookingOption: true
+            });
         }
 
         const newBook = await newBooking(userId, facilityId, sport, date, startTime, formattedEndTime);

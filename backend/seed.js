@@ -46,12 +46,13 @@ const seedDatabase = async () => {
 
         // Seed Equipment
         const equipment = [
-            { Ename: "Basketball", Sport: "Basketball", Status: "available", StockCount: 10, UsageCount: 5 },
-            { Ename: "Football", Sport: "Football", Status: "available", StockCount: 8, UsageCount: 3 },
-            { Ename: "Tennis Racket", Sport: "Tennis", Status: "available", StockCount: 15, UsageCount: 7 },
-            { Ename: "Gym Weights", Sport: "Gym", Status: "available", StockCount: 20, UsageCount: 10 },
-            { Ename: "Swimming Goggles", Sport: "Swimming", Status: "available", StockCount: 12, UsageCount: 4 }
+            { Ename: "Basketball", Sport: "Basketball", StatusAvailable: 10, StockCount: 10, UsageCount: 5 },
+            { Ename: "Football", Sport: "Football", StatusAvailable: 8, StockCount: 8, UsageCount: 3 },
+            { Ename: "Tennis Racket", Sport: "Tennis", StatusAvailable: 15, StockCount: 15, UsageCount: 7 },
+            { Ename: "Gym Weights", Sport: "Gym", StatusAvailable: 20, StockCount: 20, UsageCount: 10 },
+            { Ename: "Swimming Goggles", Sport: "Swimming", StatusAvailable: 12, StockCount: 12, UsageCount: 4 }
         ];
+        
 
         const createdEquipment = await db.Equipment.bulkCreate(equipment);
         db.Equipment.update({ StatusAvailable : Sequelize.literal('StockCount')
@@ -98,11 +99,14 @@ const seedDatabase = async () => {
         await db.Penalties.bulkCreate(penalties);
         console.log("Penalties seeded!");
 
+        
+
         // Seed Waitlist
         const waitlist = [
-            { Uid: createdUsers[0].Uid, EqId: createdEquipment[3].EqId, CreationTime: "2025-03-24" },
-            { Uid: createdUsers[1].Uid, EqId: createdEquipment[4].EqId, CreationTime: "2025-03-25" }
+            { Uid: createdUsers[0].Uid, EqId: createdEquipment[3].EqId, FacId: createdFacilities[0].Fid, startTime: "10:00:00" , endTime: "11:00:00", CreationTime: "2025-03-24" },
+            { Uid: createdUsers[1].Uid, EqId: createdEquipment[4].EqId, FacId: createdFacilities[1].Fid, startTime: "17:00:00", endTime: "18:00:00", CreationTime: "2025-03-25" }
         ];
+        
 
         await db.Waitlist.bulkCreate(waitlist);
         console.log("Waitlist seeded!");
