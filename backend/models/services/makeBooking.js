@@ -103,7 +103,7 @@ const cancelBooking = async (bookingId) => {
             });
 
             // Remove user from waitlist
-            await db.Waitlist.destroy({ where: { Uid: waitlistedUser.Uid } });
+            await db.Waitlist.destroy({ where: { Uid: waitlistedUser.Uid, FacId: waitlistedUser.FacId, Date: waitlistedUser.Date, startTime: waitlistedUser.startTime, endTime: waitlistedUser.endTime } });
 
 
             // Send notification
