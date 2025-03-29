@@ -14,7 +14,6 @@ const findEqBooking = async (EqID, startDate, endDate ) => {
                     { StartDate: { [Op.lte]: startDate }, EndDate: { [Op.gte]: endDate } }
                 ]
             }
-
         });
         return eqBooking;
     }
@@ -68,7 +67,49 @@ const deleteEqBooking = async (bookingId) => {
     }
 }   
 
-export {findEqBooking, createEqBooking, showEqBooking, deleteEqBooking};
+const getListEq = async  () => {
+    try{
+        const list = await db.Equipment.findAll({
+            attributes: ['Ename']
+        });
+        return list.map(equipment => equipment.dataValues);
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+const getEqCount = async(Ename) => {
+    try{     
+        const quanity = await db.Equipment.findOne({
+            where: Ename
+        }, {
+            attributes: 'StatusAvailable',
+        })
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+const getFacilityId = async (facilityName) => {
+    try{
+        const facilityId = await db.Facility.findOne({
+            where: {name: facilityName},
+            attributes: ['Fid'],
+        });
+        if(!facilityId){
+            return null;
+        }
+        return facilityId;
+        
+    }
+    catch(error){
+        throw error;
+    }
+};
+
+export {findEqBooking, createEqBooking, showEqBooking, deleteEqBooking, getListEq, getEqCount, getFacilityId};
 
 
 

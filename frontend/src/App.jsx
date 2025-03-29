@@ -1,87 +1,160 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
-import { TEInput, TERipple } from "tw-elements-react";
+import React from 'react';
+import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import ProtectedRoute from './pages/Protected';
+import StudentDashboard from './pages/student/StudentDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import Facility from './pages/admin/Facility';
+import Equipment from './pages/admin/Equipment';
+import Booking from './pages/admin/Booking';
+import BookFacility from './pages/student/BookFacility';
+import BookEquipment from './pages/student/BookEquipment';
+import BookingHistory from './pages/student/BookingHistory';
+
 
 function App() {
   return (
-    <>
-      <div className="max-h-screen max-w-screen flex items-center justify-center">
-        <div className="h-screen w-screen flex items-center justify-center">
-          <div className="h-screen w-screen flex items-center justify-center">
-            <div className="h-screen w-screen flex items-center justify-center">
-              <div className="h-screen w-screen flex items-center justify-center bg-white shadow-lg dark:bg-neutral-800">
-                <div className="h-screen w-screen flex flex-col lg:flex-row">
-                  
-                  {/* Left column container */}
-                  <div className="h-screen w-screen flex items-center justify-center p-6">
-                    <div className="text-center w-full max-w-md">
-                      <img className="mx-auto w-48" src="https://tecdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/lotus.webp" alt="logo" />
-                      <h4 className="mb-12 mt-1 pb-1 text-xl font-semibold">
-                        We are The Lotus Team
-                      </h4>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />}  />
+        <Route path="/studentdashboard" element={<ProtectedRoute element={<StudentDashboard />} allowedRoles={["Student", "Admin"]}/>} />
+        <Route path="/studentdashboard/bookingfacility" element={<ProtectedRoute element={<BookFacility />} allowedRoles={["Student", "Admin"]} />} />
+        <Route path="/studentdashboard/bookingequipment" element={<ProtectedRoute element={<BookEquipment />} allowedRoles={["Student", "Admin"]} />} />
+        <Route path="/studentdashboard/bookinghistory" element={<ProtectedRoute element={<BookingHistory />} allowedRoles={["Student", "Admin"]} />} />        
+        <Route path="/admin" element={<ProtectedRoute element={<AdminDashboard />} allowedRoles={["Admin"]} />} />
+        <Route path="/admin/facility" element={<ProtectedRoute element={<Facility />} allowedRoles={["Admin"]} />} />
+        <Route path="/admin/equipment" element={<ProtectedRoute element={<Equipment />} allowedRoles={["Admin"]} />} />
+        <Route path="/admin/booking" element={<ProtectedRoute element={<Booking />} allowedRoles={["Admin"]} />} />
+      </Routes>
+    </Router>
 
-                      <form className="w-full">
-                        <p className="mb-4">Please register an account</p>
-                        <TEInput type="text" label="Username" className="mb-4"></TEInput>
-                        <TEInput type="password" label="Password" className="mb-4"></TEInput>
+  )  
+}
 
-                        <div className="mb-12 pb-1 pt-1 text-center">
-                          <TERipple rippleColor="light" className="w-full">
-                            <button
-                              className="mb-3 w-full rounded px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out"
-                              type="button"
-                              style={{
-                                background: "linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593)",
-                              }}
-                            >
-                              Sign up
-                            </button>
-                          </TERipple>
-                          <a href="#!">Terms and conditions</a>
-                        </div>
 
-                        <div className="flex items-center justify-between pb-6">
-                          <p className="mb-0 mr-2">Have an account?</p>
-                          <TERipple rippleColor="light">
-                            <button
-                              type="button"
-                              className="inline-block rounded border-2 border-danger px-6 pb-[6px] pt-2 text-xs font-medium uppercase leading-normal text-danger transition duration-150 ease-in-out hover:border-danger-600 hover:bg-neutral-500 hover:bg-opacity-10 hover:text-danger-600"
-                            >
-                              Login
-                            </button>
-                          </TERipple>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
+const LandingPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-                  {/* Right column container */}
-                  <div className="h-screen w-screen flex items-center justify-center text-white p-6"
-                    style={{
-                      background: "linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593)",
-                    }}>
-                    <div className="text-center">
-                      <h4 className="mb-6 text-xl font-semibold">
-                        We are more than just a company
-                      </h4>
-                      <p className="text-sm">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-                        sed do eiusmod tempor incididunt ut labore et dolore magna
-                        aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                        ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  const navigate = useNavigate();
+
+  const handleRegister = () => {
+    setIsLogin(prev => !prev);
+  };
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/login', { email, password });
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
+      console.log(response.data.token);
+
+      if (response.data.role === 'Admin') {
+        navigate('/admin');
+      } else {
+        navigate('/studentdashboard');
+      }
+    } catch (error) {
+      console.log(error.message);
+      setError(error.message);
+    }
+  };
+
+  const handleNewUser = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/register', { username, email, password });
+      console.log(response);
+      navigate("/");
+    } catch (error) {
+      console.log(error.message);
+      setError(error.message);
+    }
+  };
+
+  return (
+    <div className="h-[100vh] w-[100vw] flex items-center justify-center bg-gray-900">
+      <div className="max-w-4xl h-[70vh] flex rounded-lg overflow-hidden shadow-2xl bg-gray-800">
+        
+        {/* Left Side - Welcome Section */}
+        <div className="w-1/2 flex flex-col justify-center items-center p-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <h1 className="text-4xl font-bold text-center">Welcome to SportsHub</h1>
+          <p className="mt-4 text-center text-lg">Your all-in-one platform for booking sports facilities & equipment at NITK.</p>
+        </div>
+
+        {/* Right Side - Login/Register Section */}
+        <div className="w-1/2 flex flex-col justify-center items-center p-10 bg-gray-700">
+          <h2 className="text-2xl font-bold text-white">{isLogin ? "Sign In" : "Register"}</h2>
+
+          <form onSubmit={isLogin ? handleSignIn : handleNewUser} className="w-full">
+            {!isLogin && (
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full p-3 mt-4 rounded bg-gray-600 text-white border border-gray-500 focus:outline-none"
+                required
+              />
+            )}
+            
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 mt-4 rounded bg-gray-600 text-white border border-gray-500 focus:outline-none"
+              required
+            />
+            
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 mt-4 rounded bg-gray-600 text-white border border-gray-500 focus:outline-none"
+              required
+            />
+
+            {!isLogin && (
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full p-3 mt-4 rounded bg-gray-600 text-white border border-gray-500 focus:outline-none"
+                required
+              />
+            )}
+
+            {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
+
+            <button type="submit" className="w-full p-3 mt-6 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded">
+              {isLogin ? "Login" : "Register"}
+            </button>
+          </form>
+
+          <p className="text-md text-gray-400 mt-6">
+            {isLogin ? "New Here?" : "Already have an account?"} 
+            <span onClick={handleRegister} className="text-purple-400 hover:underline cursor-pointer"> {isLogin ? "Register" : "Login"}</span>
+          </p>
         </div>
       </div>
-    </>
+    </div>
   );
-}
+};
 
 export default App;

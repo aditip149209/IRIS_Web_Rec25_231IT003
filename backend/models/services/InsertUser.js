@@ -3,7 +3,7 @@ import db from "../index.js";
 
 const InsertIntoUser = async (data) => {
     try{
-        const user = await Users.create(data);
+        const user = await db.Users.create(data);
         console.log("user created");
         return user;
     }

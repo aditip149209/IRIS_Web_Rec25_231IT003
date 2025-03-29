@@ -2,8 +2,8 @@ import db from "../models/index.js";
 import { sequelize } from "../utils/database.js";
 import { Op } from "sequelize";
 import {findBooking, newBooking, getBooking, cancelBooking} from "../models/services/makeBooking.js";
-import { checkEquipmentAvailability } from "./checkController.js";
-import { deleteEqBooking, createEqBooking, showEqBooking } from "../models/services/EqBooking.js";
+import { checkEquipmentAvailability, getFacilities, checkCourtAvail, getSportList, getEquipmentList, getEquipmentQuantity } from "./checkController.js";
+import { deleteEqBooking, createEqBooking, showEqBooking, getFacilityId} from "../models/services/EqBooking.js";
 import sendMail from "../utils/mailer.js";
 
 const studentBoard = (req,res) => {
@@ -19,6 +19,17 @@ const bookNew = async (req, res) => {
         if (!userId || !facilityId || !sport || !date || !startTime) {
             return res.status(400).json({ message: "Missing required fields: userId, facilityId, sport, date, startTime" });
         }
+        const currentdate = new Date();
+        currentdate.setHours(0, 0, 0, 0);
+
+        const selectedDate = new Date(date);
+        selectedDate.setHours(0,0,0,0);
+
+        if(selectedDate < currentdate){
+            return res.status(409).json({
+                message: "You cannot book a slot in a past date"
+        });
+        }
 
         const user = await db.Users.findByPk(userId);
         if (!user) {
@@ -30,16 +41,33 @@ const bookNew = async (req, res) => {
         const formattedEndTime = endTime.toTimeString().split(" ")[0];
 
         const existingBooking = await findBooking(userId, facilityId, sport, date, startTime);
+        const existingWaitlist = await db.Waitlist.findOne({
+            where: {
+                Uid: userId,
+                FacId: facilityId,
+                Date: date,
+                startTime: startTime,
+                endTime: formattedEndTime
+            }
+        });
+        console.log(existingBooking);
+        console.log(existingWaitlist);
+
+        if (existingWaitlist) {
+            return res.status(409).json({
+                message: "You are already on the waitlist for this slot.",
+                waitlistOption: false
+            });
+        }
 
         if (existingBooking) {
             if (!confirmWaitlist) {
                 return res.status(409).json({
-                    message: "Facility is already booked for this time slot, confirm joining waitlist",
+                    message: "Facility is already booked/waitlisted by you on this day, try another date",
                     waitlistOption: true
                 });
             }
 
-            // Add to waitlist
             const waitBooking = await db.Waitlist.create({
                 Uid: userId,
                 FacId: facilityId,
@@ -63,13 +91,11 @@ const bookNew = async (req, res) => {
             });
         }
 
-        // Create new booking
         const newBook = await newBooking(userId, facilityId, sport, date, startTime, formattedEndTime);
         const bid = newBook.id;
 
-        // Save notification (for reminder)
         const bookingTime = new Date(`${date}T${startTime}`);
-        const reminderTime = new Date(bookingTime.getTime() - 30 * 60 * 1000); // 30 minutes before
+        const reminderTime = new Date(bookingTime.getTime() - 30 * 60 * 1000);
 
         await db.Notification.create({
             Uid: userId,
@@ -82,7 +108,7 @@ const bookNew = async (req, res) => {
         await sendMail(user.email, "Booking Confirmation",
             `Dear ${user.name},\n\nYour booking for ${sport} at ${facilityId} on ${date} from ${startTime} to ${formattedEndTime} has been confirmed.\n\nEnjoy your game!\n\nRegards,\nSports Booking System`);
 
-        res.json({ message: "Booking successful", booking: newBook });
+        return res.json({ message: "Booking successful", booking: newBook });
 
     } catch (error) {
         console.error(error);
@@ -90,12 +116,10 @@ const bookNew = async (req, res) => {
     }
 };
 
-
-
 const getBookings = async (req,res) => {
     console.log("supposed to show yours current bookings from the bookings table lol");
     try{
-    const {uid} = req.body;
+    const {uid} = req.query;
 
     if(!uid){
         return res.status(400).json({ message: "Missing required fields: uid" });
@@ -116,7 +140,7 @@ const getBookings = async (req,res) => {
 
 const deletebooking = async (req,res) => {
     try{
-        const {bookingId} = req.body;
+        const {bookingId} = req.query;
         if(!bookingId){
             return res.status(400).json({ message: "Missing required fields: bookingId" });
         }
@@ -136,6 +160,7 @@ const deletebooking = async (req,res) => {
 const bookEquipment = async (req,res) => {
     try{
         const {Uid, EqID, Quantity, StartDate, EndDate} = req.body;
+        console.log(req.body);
         if(!Uid || !EqID || !Quantity || !StartDate || !EndDate){
             return res.status(400).json({ message: "Check required fields for missing values: Uid, EqID, Quantity, StartDate, EndDate" });
         }
@@ -191,4 +216,30 @@ const deleteEqBookings = async (req, res) => {
     }   
 };
 
-export {studentBoard, bookNew, getBookings, deletebooking, bookEquipment, getEqBookings, deleteEqBookings};
+const facId = async (req, res) => {
+    const {facilityName} = req.query;
+    if(!facilityName) {
+        console.log("Facility name is missing");
+        return res.status(400).json({
+            message: "Facility name missing in request"
+        });
+    }
+    
+        try{
+            const facilityId = await getFacilityId(facilityName);
+            if(!facilityId){
+                return res.status(404).json({
+                    message: "Facility not found"
+                })
+            }
+            return res.status(200).json(facilityId);            
+        }
+        catch(error){
+            return res.status(500).json({
+                message: error.message
+            })
+        }
+    
+}
+
+export {studentBoard, bookNew, getBookings, deletebooking, bookEquipment, getEqBookings, deleteEqBookings, facId};

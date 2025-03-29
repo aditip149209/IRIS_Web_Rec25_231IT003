@@ -61,7 +61,7 @@ const seedDatabase = async () => {
         // Seed Bookings
         const bookings = [
             { studentId: createdUsers[0].Uid, Sport: "Basketball", facilityId: createdFacilities[0].Fid, date: "2025-03-25", startTime: "10:00:00", endTime: "11:00:00", status: "approved" },
-            { studentId: createdUsers[1].Uid, Sport: "Football", facilityId: createdFacilities[1].Fid, date: "2025-03-26", startTime: "16:00:00", endTime: "17:30:00", status: "approved" },
+            { studentId: createdUsers[1].Uid, Sport: "Football", facilityId: createdFacilities[1].Fid, date: "2025-03-26", startTime: "16:00:00", endTime: "17:00:00", status: "approved" },
             { studentId: createdUsers[2].Uid, Sport: "Tennis", facilityId: createdFacilities[2].Fid, date: "2025-03-27", startTime: "08:00:00", endTime: "09:00:00", status: "pending" },
             { studentId: createdUsers[0].Uid, Sport: "Gym Workout", facilityId: createdFacilities[3].Fid, date: "2025-03-28", startTime: "18:00:00", endTime: "19:00:00", status: "approved" }
         ];

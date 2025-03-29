@@ -1,28 +1,24 @@
 import db from "../models/index.js";
 import { Op } from "sequelize";
-import { findEqBooking } from "../models/services/EqBooking.js";
+import { findEqBooking, createEqBooking, showEqBooking, deleteEqBooking, getListEq, getEqCount } from "../models/services/EqBooking.js";
 
 const checkCourtAvail = async (req, res) => {
     try {
-        const { sport, date, facilityId } = req.body;
+        const { sport, facility, date } = req.body;
         console.log("sport:", sport);
         console.log("date:", date);
 
-        if (!sport || !date || !facilityId) {
-            return res.status(400).json({ message: "Missing required fields: sport, date" });
+        if (!sport || !date || !facility) {
+            return res.status(400).json({ message: "Missing required fields: sport, date, facility" });
         }
 
-        // Get all facilities of the given sport
-        const allFacilities = await db.Facility.findOne({ where: { sport, Fid:facilityId } });
+        const allFacilities = await db.Facility.findOne({ where: { sport, name:facility } });
         console.log(allFacilities);
         if (!allFacilities) {
             return res.json({ message: "This facility for the sport does not exist" });
         }
+        const facilityId = allFacilities.Fid
 
-        // Get all facility IDs
-        // const facilityIds = allFacilities.map(facility => facility.Fid);
-
-        // Fetch all bookings for these facilities on the given date
         const bookings = await db.Bookings.findAll({
             where: {
                 Sport:sport,
@@ -32,7 +28,6 @@ const checkCourtAvail = async (req, res) => {
             attributes: ['startTime', 'endTime']
         });
 
-        // Define working hours (e.g., 8 AM to 8 PM)
         const openingTime = 8; // 8 AM
         const closingTime = 20; // 8 PM
         const slotDuration = 1; // 1-hour slots
@@ -71,7 +66,9 @@ const checkCourtAvail = async (req, res) => {
 
 const checkEquipmentAvailability = async (EqId, requestedQty, startDate, endDate) => {
 
-    const equipment = await db.Equipment.findByPk(EqId);
+    const equipment = await db.Equipment.findOne({
+        where: {Ename: EqId}
+    });
     if (!equipment) return { success: false, message: "Equipment not found" };
 
 
@@ -106,6 +103,81 @@ const checkEquipmentAvailability = async (EqId, requestedQty, startDate, endDate
     }
     return { success: true };
 };
+const getSportList = async (req, res) => {
+    try {
+        const facs = await db.Facility.findAll({
+            attributes: ['sport'],
+            group: ['sport']
+        });
 
-export { checkEquipmentAvailability, checkCourtAvail};
+        // Extract unique sport names using a Set
+        const sportsSet = new Set(facs.map(facility => facility.sport));
+
+        // Convert Set back to an array
+        const uniqueSports = [...sportsSet];
+        return res.status(200).json(uniqueSports);
+    } catch (error) {
+        console.error("Error fetching sports:", error);
+        return res.status(500).json({
+            message: "server error"
+        })
+    }
+};
+
+const getFacilities = async (req, res) => {
+    const {sportname} = req.query;
+
+    try {
+        const facilities = await db.Facility.findAll({
+            attributes: ['name'], 
+            where: { sport: sportname } 
+        });
+
+        // Extract facility names
+        const facilityList = facilities.map(facility => facility.name);
+
+        return res.status(200).json({
+            facilityList
+        }) 
+    } catch (error) {
+        console.error("Error fetching facilities:", error);
+        return res.status(500).json({
+            message: "Internal server error"
+        }); 
+    }
+};
+
+
+const getEquipmentQuantity = async (req, res) => {
+    const eqname  = req.body;
+    if(eqname){
+        try{
+            const quantity = await getEqCount(eqname);
+            return res.status(200).json(quantity);
+        }
+        catch(error){
+            console.log(error.message);
+            return res.status(500).json({
+                message: "server error here in getequipmentquantity"
+            })
+        }
+    }
+    return res.status(400).json({
+        message: "Some error happened"
+    })
+};
+
+const getEquipmentList = async (req, res) => {
+    try{
+        const equipment = await getListEq();
+        return res.status(200).json(equipment);
+    }
+    catch(error){
+        console.log(error.message);
+        return res.status(500).json({
+        })
+    }
+};
+
+export { checkEquipmentAvailability,getFacilities, checkCourtAvail, getSportList, getEquipmentList, getEquipmentQuantity};
 
