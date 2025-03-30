@@ -39,15 +39,22 @@ const newBooking = async(userId, facilityId, sport, date, startTime, endTime) =>
 const getBooking = async (uid) => {
     try {
         const bookings = await db.Bookings.findAll({
-            where: {
-                studentId: uid
-            }
+            where: { studentId: uid },
+            include: [
+                {
+                    model: db.Facility,  // Assuming Facility is the table name
+                    attributes: ['name'],  // Fetch only the facility name
+                }
+            ],
+            order: [['date', 'DESC']]
         });
+
         return bookings;
     } catch (error) {
         console.error("Error fetching bookings:", error);
     }
-}
+};
+
 
 const getWaitedBooking = async (facilityId, date, startTime, endTime) => {
     try {
@@ -71,9 +78,12 @@ const cancelBooking = async (bookingId) => {
         if (!bookingId) {
             throw new Error("Booking ID is required");
         }
+        console.log(bookingId);
 
         // Find the booking to be canceled
-        const booking = await db.Bookings.findByPk(bookingId);
+        const booking = await db.Bookings.findOne({
+            where: {id: bookingId}
+        });
 
         if (!booking) {
             throw new Error("Booking not found");

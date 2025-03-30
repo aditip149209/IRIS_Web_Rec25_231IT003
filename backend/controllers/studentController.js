@@ -140,7 +140,8 @@ const getBookings = async (req,res) => {
 
 const deletebooking = async (req,res) => {
     try{
-        const {bookingId} = req.query;
+        const bookingId = parseInt(req.query.bookingId);
+        
         if(!bookingId){
             return res.status(400).json({ message: "Missing required fields: bookingId" });
         }
@@ -166,7 +167,17 @@ const bookEquipment = async (req,res) => {
         }
         const check = await checkEquipmentAvailability(EqID, Quantity, StartDate, EndDate);
         if(check.success){
-            try{const booking = await createEqBooking(Uid, EqID, Quantity, StartDate, EndDate);
+            try{
+                const equipId = await db.Equipment.findOne({
+                    where: {Ename: EqID},
+                    attributes: ['EqId']
+                })
+                console.log("this is equipid" ,equipId);
+                const booking = await createEqBooking(Uid, equipId, Quantity, StartDate, EndDate);
+            await db.Equipment.increment(
+                    { StatusBooked: Quantity, StatusAvailable: -Quantity },  // Increment StatusBooked by the quantity booked
+                    { where: { Ename: EqID } }
+                );
             return res.status(200).json({
                 message: "Equipment booked successfully",
                 booking
@@ -188,7 +199,7 @@ const bookEquipment = async (req,res) => {
 
 const getEqBookings = async (req, res) => {
     try{
-        const {uid} = req.body;
+        const uid = req.query.uid;
         const bookings = await showEqBooking(uid);
         return res.status(200).json({
             message: "showing all current equipment bookings",
@@ -205,6 +216,10 @@ const deleteEqBookings = async (req, res) => {
     try{
         const {bookingId} = req.body;
         const booking = await deleteEqBooking(bookingId);
+        await db.Equipment.increment({
+            StatusBooked : -booking.Quantity,
+            StatusAvailable: booking.Quantity
+        })
         return res.status(200).json({
             message: "Equipment booking deleted successfully",
             booking
@@ -239,7 +254,8 @@ const facId = async (req, res) => {
                 message: error.message
             })
         }
-    
 }
+
+
 
 export {studentBoard, bookNew, getBookings, deletebooking, bookEquipment, getEqBookings, deleteEqBookings, facId};

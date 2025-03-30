@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { Link } from 'react-router-dom';
 
 function BookFacility() {
     const [sports, setSports] = useState([]);
@@ -123,9 +124,7 @@ function BookFacility() {
             console.log("Booked Slots:", bookedSlotsSet);
             console.log("Available slots:", availableSlots);
             setBookedSlots(bookedSlotsSet); // Update the bookedSlots state
-    
-            // let availableFacSlots = allSlots.filter(slot => !bookedSlotsSet.has(slot));
-    
+        
         } catch (error) {
             console.error("Error fetching available slots:", error);
         }
@@ -136,7 +135,6 @@ function BookFacility() {
         const selectedSlot = event.target.value;
         setSelectedSlot(selectedSlot);
 
-        // Check if the selected slot is in the bookedSlots set
         const isSlotBooked = bookedSlots.has(selectedSlot);
         setIsWaitlisted(isSlotBooked);
 
@@ -146,7 +144,7 @@ function BookFacility() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setShowConfirmation(true); // Show the confirmation modal
+        setShowConfirmation(true); 
     };
 
     const correctTime = () => {
@@ -208,13 +206,54 @@ function BookFacility() {
     };
 
     return (
-        <div className="w-full flex justify-center items-center h-screen bg-gray-900">
+        <div className='flex h-screen'>
+     
+            <aside className="w-64 bg-gray-700 text-white p-5 items-center flex flex-col">
+  <h1 className="text-3xl font-bold mb-6">Menu</h1>
+  <nav className="flex flex-col items-center justify-center ">
+  <ul className="flex flex-col items-center">
+            <li className="p-3">
+              <Link
+                to="/studentdashboard"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                🏠 Dashboard
+              </Link>
+            </li>
+            <li className="p-3">
+              <Link
+                to="/studentdashboard/bookingfacility"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                📅 Book Facility
+              </Link>
+            </li>
+            <li className="p-3">
+              <Link
+                to="/studentdashboard/bookingequipment"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                🏋️‍♂️ Book Equipment
+              </Link>
+            </li>
+            <li className="p-3">
+              <Link
+                to="/studentdashboard/bookinghistory"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                📜 My Bookings
+              </Link>
+            </li>
+          </ul>    
+  </nav>
+</aside>
+   <div className="w-full flex justify-center items-center h-screen bg-gray-900">
             <div className="w-1/3 bg-black p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-center mb-6 text-white">Book a Facility</h2>
+                <h2 className="text-2xl font-bold text-center mb-6 text-white">Book Facility</h2>
                 <form className='w-full' onSubmit={handleSubmit}>
                     <div>
                         <label className="text-white">Select a Sport:</label>
-                        <select className="w-full p-2 border border-gray-400 bg-white text-black rounded-md"
+                        <select className="w-full p-2 border border-gray-400 bg-black text-white rounded-md"
                             value={selectedSport} onChange={handleSportChange}>
                             <option value="">-- Select Sport --</option>
                             {sports.map((sport, index) => (
@@ -225,7 +264,7 @@ function BookFacility() {
 
                     <div>
                         <label className="text-white">Select Facility:</label>
-                        <select className="w-full p-2 border border-gray-400 bg-white text-black rounded-md"
+                        <select className="w-full p-2 border border-gray-400 bg-black text-white rounded-md"
                             value={facility} onChange={(e) => setFacility(e.target.value)} disabled={!selectedSport}>
                             <option value="">Choose a Facility</option>
                             {availableFacilities.map((f, index) => (
@@ -242,7 +281,7 @@ function BookFacility() {
 
                     <div>
                         <label className="text-white">Select Time Slot:</label>
-                        <select className="w-full p-2 border border-gray-400 bg-white text-black rounded-md"
+                        <select className="w-full p-2 border border-gray-400 bg-black text-white rounded-md"
                             value={selectedSlot}
                             onChange={handleSlotChange}
                             disabled={!date || availableSlots.length === 0}>
@@ -258,7 +297,7 @@ function BookFacility() {
                     </div>
 
                     {/* Submit Button */}
-                    <button className="bg-blue-500 text-white w-full p-2 rounded-md mt-4" type="submit" disabled={!selectedSlot}>Book Now</button>
+                    <button className="bg-green-500 text-white w-full p-2 rounded-md mt-4" type="submit" disabled={!selectedSlot}>Book Now</button>
                 </form>
             </div>
             {/* Confirmation Modal */}
@@ -280,6 +319,7 @@ function BookFacility() {
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 }

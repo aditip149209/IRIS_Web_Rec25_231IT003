@@ -26,7 +26,7 @@ const createEqBooking = async (uid, eqid,quantity, startDate, endDate) => {
     try{
         const eqBooking = await db.BookingEquipment.create({
             StudentID: uid,
-            EqId: eqid,
+            Ename: eqid,
             Quantity: quantity,
             StartDate: startDate,
             EndDate: endDate
@@ -70,7 +70,7 @@ const deleteEqBooking = async (bookingId) => {
 const getListEq = async  () => {
     try{
         const list = await db.Equipment.findAll({
-            attributes: ['Ename']
+            attributes: ['EqId','Ename']
         });
         return list.map(equipment => equipment.dataValues);
     }

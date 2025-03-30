@@ -67,7 +67,7 @@ const checkCourtAvail = async (req, res) => {
 const checkEquipmentAvailability = async (EqId, requestedQty, startDate, endDate) => {
 
     const equipment = await db.Equipment.findOne({
-        where: {Ename: EqId}
+        where: {EqId: EqId}
     });
     if (!equipment) return { success: false, message: "Equipment not found" };
 

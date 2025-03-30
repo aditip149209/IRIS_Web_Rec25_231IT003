@@ -16,13 +16,13 @@ const InsertNewFac = async (Sport, Name, Location, Type ) => {
     }
 };
 
-
 const InsertNewEquipment = async (Name, Sport, StockCount) => {
     try{
         const newEq = await db.Equipment.create({
             Ename: Name,
             Sport: Sport,
-            StockCount: StockCount
+            StockCount: StockCount,
+            StatusAvailable: StockCount
         });
         return newEq;
     }
@@ -31,14 +31,13 @@ const InsertNewEquipment = async (Name, Sport, StockCount) => {
     }
 };
 
-
-const deleteEquip = async (EqId) => {
+const deleteEquip = async (Ename) => {
     const check = await db.Equipment.findOne({
-        where: {EqId: EqId}
+        where: {Ename}
     });
     if(check){
         await db.Equipment.destroy({
-            where: {EqId: EqId}
+            where: {Ename}
         });
         return "Equipment deleted";
     }
@@ -47,13 +46,13 @@ const deleteEquip = async (EqId) => {
     }
 };
 
-const deleteFac = async (Fid) => {
+const deleteFac = async (Fname) => {
     const check = await db.Facility.findOne({
-        where: {Fid: Fid}
+        where: {name: Fname}
     });
     if(check){
         await db.Facility.destroy({
-            where: {Fid: Fid}
+            where: {name: Fname}
         });
         return "Facility deleted";
     }
@@ -62,19 +61,18 @@ const deleteFac = async (Fid) => {
     }
 };
 
-const updateEq = async (EqId, Name, Sport, StockCount, StatusReserved, StatusAvailable, StatusBooked) => {
+const updateEq = async (Name, StockCount, StatusReserved, StatusAvailable, StatusBooked) => {
     const check = await db.Equipment.findOne({
-        where: {EqId: EqId}
+        where: {Ename: Name}
     });
     if(check){
         await db.Equipment.update({
             Ename: Name,
-            Sport: Sport,
             StockCount: StockCount,
             StatusReserved: StatusReserved,
             StatusAvailable: StatusAvailable,
             StatusBooked: StatusBooked
-        }, {where: {EqId: EqId}});
+        }, {where: {Ename : Name}});
         return "Equipment updated";
     }
     else{

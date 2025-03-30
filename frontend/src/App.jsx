@@ -92,7 +92,7 @@ const LandingPage = () => {
         {/* Left Side - Welcome Section */}
         <div className="w-1/2 flex flex-col justify-center items-center p-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
           <h1 className="text-4xl font-bold text-center">Welcome to SportsHub</h1>
-          <p className="mt-4 text-center text-lg">Your all-in-one platform for booking sports facilities & equipment at NITK.</p>
+          <p className="mt-4 text-2xl text-center">Your all-in-one platform for booking sports facilities & equipment at NITK.</p>
         </div>
 
         {/* Right Side - Login/Register Section */}

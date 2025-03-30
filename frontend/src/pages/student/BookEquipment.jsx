@@ -3,20 +3,20 @@ import { useState, useEffect } from 'react'
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function BookEquipment() {
   
-  const [equipmentList, setEquipmentList] = useState([]); // Equipment options
+  const [equipmentList, setEquipmentList] = useState([]); 
   const [eqID, setEqID] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [userId, setUserId] = useState(""); // Replace with actual user ID from auth
+  const [userId, setUserId] = useState("");
   const [currentBookings, setCurrentBookings] = useState([]);
 
   const navigate = useNavigate();
 
-  // Fetch available equipment from backend
   useEffect(() => {
     const token = localStorage.getItem("token");
     if(token){
@@ -24,17 +24,7 @@ function BookEquipment() {
       setUserId(decoded.id);
     }
     fetchEquipment();
-    // fetchUserBookings();
   }, []);
-
-  useEffect(() => {
- 
-
-  }, [eqID]);
-
-  useEffect(() => {
-
-  }, [eqID, quantity]);
 
   const fetchEquipment = async () => {
     try {
@@ -45,30 +35,13 @@ function BookEquipment() {
         console.log(equipmentList);
       return equipmentList;
       
-      
     } catch (error) {
       console.error("Error fetching equipment:", error);
     }
   };
-
-  // const fetchUserBookings = async () => {
-    // try {
-      // console.log("error is not here, this is right before sending the request")
-      // const response = await axios.get("http://localhost:3000/api/module/student/booking/bookequipment/equipmentBookings", { uid: userId },
-        // { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      // );
-      // console.log(response.data);
-      // setCurrentBookings(response.data.bookings);
-    // } catch (error) {
-      // console.error("Error fetching user bookings:", error);
-    // }
-  // };
-
-  
+   
   const handleBooking = async (event) => {
     event.preventDefault();
-    // console.log(userId);
-    // console.log(eqID);
     try {
       const response = await axios.post("http://localhost:3000/api/module/student/booking/bookequipment", {
         Uid: userId,
@@ -80,7 +53,7 @@ function BookEquipment() {
       { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
 
       alert(response.data.message);
-      // fetchUserBookings(); // Refresh bookings after successful booking
+
     } catch (error) {
       console.error("Booking failed:", error);
       alert("Booking failed. Please try again.");
@@ -90,12 +63,51 @@ function BookEquipment() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-700">
+    <div className='flex h-screen'>
+      <aside className="w-64 bg-gray-900 text-white p-5 items-center flex flex-col">
+  <h1 className="text-3xl font-bold mb-6">Menu</h1>
+  <nav className="flex flex-col items-center justify-center ">
+  <ul className="flex flex-col items-center">
+            <li className="p-3">
+              <Link
+                to="/studentdashboard"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                🏠 Dashboard
+              </Link>
+            </li>
+            <li className="p-3">
+              <Link
+                to="/studentdashboard/bookingfacility"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                📅 Book Facility
+              </Link>
+            </li>
+            <li className="p-3">
+              <Link
+                to="/studentdashboard/bookingequipment"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                🏋️‍♂️ Book Equipment
+              </Link>
+            </li>
+            <li className="p-3">
+              <Link
+                to="/studentdashboard/bookinghistory"
+                className="btn btn-ghost hover:bg-primary hover:text-white"
+              >
+                📜 My Bookings
+              </Link>
+            </li>
+          </ul>    
+  </nav>
+</aside>
+<div className="flex justify-center items-center h-screen bg-gray-700 w-full">
       <div className="w-1/3 bg-slate-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Book Equipment</h2>
 
         <form onSubmit={handleBooking}>
-          {/* Equipment Selection */}
           <label className="block font-semibold">Select Equipment:</label>
           <select
             className="input input-bordered w-full my-2"
@@ -105,7 +117,7 @@ function BookEquipment() {
             {
               equipmentList && equipmentList.length > 0 ? (
                 equipmentList.map((eq) => (
-                  <option key={eq.Ename} value={eq.Ename}>
+                  <option key={eq.Ename} value={eq.EqId}>
                      {eq.Ename}
                   </option>
                 )
@@ -156,7 +168,8 @@ function BookEquipment() {
           </button>
         </form>        
       </div>
-    </div>      
+    </div>     
+    </div> 
   )
 }
 

@@ -46,9 +46,9 @@ const addEquipment = async (req, res) => {
 };
 
 const updateEquipment = async (req, res) => {
-    const { EqId, Name, Sport, StockCount, StatusReserved, StatusAvailable, StatusBooked } = req.body;
+    const { Name, StockCount, StatusReserved, StatusAvailable, StatusBooked } = req.body;
 
-    if (!EqId || !Name || !Sport || !StockCount || StatusReserved === undefined || StatusAvailable === undefined || StatusBooked === undefined) {
+    if (!Name || !StockCount || StatusReserved === undefined || StatusAvailable === undefined || StatusBooked === undefined) {
         return res.status(400).json({
             message: "Please provide all the required fields",
         });
@@ -67,14 +67,14 @@ const updateEquipment = async (req, res) => {
     }
 
     try {
-        const equipment = await db.Equipment.findOne({ where: { EqId } });
+        const equipment = await db.Equipment.findOne({ where: { Ename: Name } });
         if (!equipment) {
             return res.status(404).json({
                 message: "Equipment not found",
             });
         }
 
-        const updates = await updateEq(EqId, Name, Sport, StockCount, StatusReserved, StatusAvailable, StatusBooked);
+        const updates = await updateEq(Name, StockCount, StatusReserved, StatusAvailable, StatusBooked);
         return res.status(200).json({
             message: "Equipment updated",
             updates,
@@ -88,23 +88,23 @@ const updateEquipment = async (req, res) => {
 };
 
 const deleteEquipment = async (req, res) => {
-    const { EqId } = req.body;
+    const  name  = req.query.name;
 
-    if (!EqId) {
+    if (!name) {
         return res.status(400).json({
-            message: "Please provide the equipment ID",
+            message: "Please provide the equipment name",
         });
     }
 
     try {
-        const equipment = await db.Equipment.findOne({ where: { EqId } });
+        const equipment = await db.Equipment.findOne({ where: { Ename: name } });
         if (!equipment) {
             return res.status(404).json({
                 message: "Equipment not found",
             });
         }
 
-        const deleteEq = await deleteEquip(EqId);
+        const deleteEq = await deleteEquip(name);
         return res.status(200).json({
             message: "Equipment has been deleted",
         });
@@ -124,15 +124,9 @@ const showAnalytics = async (req, res) => {
 };
 
 const showEquipment = async (req, res) => {
-    const {sport} = req.body;
-    if(!sport) {
-        return res.status(400).json({
-            message: "Please provide the sport"
-        });
-    }
     try{
         const equips = await db.Equipment.findAll({
-            where:[ {Sport: sport}]
+            attributes: ['EqId','Ename','StatusAvailable','StatusReserved','StatusBooked','StockCount']
         })
     
         return res.status(200).json({
@@ -186,68 +180,42 @@ const addFacility = async (req, res) => {
 };
 
 const updateFacility = async (req, res) => {
-    const { Fid, Name, Sport, Location, Type, Status } = req.body;
-
-    if (!Fid || !Name || !Sport || !Location || !Type || !Status) {
+    const {name, status} = req.body;
+    if(!name || !status){
         return res.status(400).json({
-            message: "Please provide all the required fields",
-        });
+            message: "name/status field is empty, pls ensure it is filled"
+        })
     }
-
-    const validTypes = ["court", "field", "gym", "pool"];
-    const validStatuses = ["available", "booked", "maintenance", "reserved"];
-
-    if (!validTypes.includes(Type)) {
-        return res.status(400).json({
-            message: `Invalid facility type. Valid types are: ${validTypes.join(", ")}`,
-        });
+    try{
+        const updateFac = await db.Facility.update({status},{
+            where: {name:name},
+        })
     }
-
-    if (!validStatuses.includes(Status)) {
-        return res.status(400).json({
-            message: `Invalid facility status. Valid statuses are: ${validStatuses.join(", ")}`,
-        });
-    }
-
-    try {
-        const facility = await db.Facility.findOne({ where: { Fid } });
-        if (!facility) {
-            return res.status(404).json({
-                message: "Facility not found",
-            });
-        }
-
-        const updates = await updateFac(Fid, Name, Sport, Location, Type, Status);
-        return res.status(200).json({
-            message: "Facility updated",
-            updates,
-        });
-    } catch (err) {
+    catch(error){
         return res.status(500).json({
-            message: "There was an error updating the facility",
-            error: err.message,
-        });
+            message: "server error rip"
+        })
     }
 };
 
 const deleteFacility = async (req, res) => {
-    const { facId } = req.body;
+    const fname = req.query.name;
 
-    if (!facId) {
+    if (!fname) {
         return res.status(400).json({
             message: "Please provide the facility ID",
         });
     }
 
     try {
-        const facility = await db.Facility.findOne({ where: { Fid: facId } });
+        const facility = await db.Facility.findOne({ where: { name: fname } });
         if (!facility) {
             return res.status(404).json({
                 message: "Facility not found",
             });
         }
 
-        const deleteF = await deleteFac(facId);
+        const deleteF = await deleteFac(fname);
         return res.status(200).json({
             message: "Facility has been deleted",
         });
@@ -260,15 +228,10 @@ const deleteFacility = async (req, res) => {
 };
 
 const showFacility = async (req, res) => {
-    const { sport } = req.body;
-    if(!sport) {
-        return res.status(400).json({
-            message: "Please provide the sport"
-        });
-    }
+    
     try{
-        const facilities = await db.findAll({
-            where: [{Sport: sport}]
+        const facilities = await db.Facility.findAll({
+            attributes: ['name']
         })
         return res.status(200).json({
             message: "Here are the facilities",
@@ -283,6 +246,46 @@ const showFacility = async (req, res) => {
     }
 };
 
+const showEquipmentCount = async(req, res) =>{
+    const ename = req.query.ename;
+    if(!ename){
+        return res.status(400).json({
+            message: "select an equipment"
+        })
+    }
+    try{
+        const counts = await db.Equipment.findOne({
+            where: {Ename: ename},
+            attributes: ['StatusAvailable', 'StatusBooked', 'StatusReserved', 'StockCount']
+        })
+        return res.status(200).json({
+            message: `returned counts of ${ename}`,
+            counts
+        })
+    }
+    catch{
+        return res.status(500).json({
+            message: "internal server error here"
+        })
 
+    }
+    
+}
 
-export {adminBoard, addEquipment, updateEquipment, deleteEquipment, showAnalytics, addFacility, showEquipment, showFacility, deleteFacility, updateFacility};
+const totalBookings = async (req, res) => {
+
+}
+
+const mostActive = async(req, res) =>{
+
+}
+
+const popularEquipmentNFacilities = async (req, res) => {
+
+}
+
+const getPeakHours = async (req, res) => {
+
+}
+
+export {showEquipmentCount, adminBoard, addEquipment, updateEquipment, deleteEquipment, showAnalytics, addFacility, showEquipment, showFacility, deleteFacility, updateFacility, totalBookings, mostActive, popularEquipmentNFacilities, getPeakHours};

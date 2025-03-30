@@ -1,5 +1,6 @@
+
 import { sequelize } from "../utils/database.js";
-import { DataTypes } from "sequelize";
+import { DataTypes, INTEGER } from "sequelize";
 
 // Define models
 const Users = sequelize.define('Users', {
@@ -80,6 +81,17 @@ const Waitlist = sequelize.define('Waitlist', {
     CreationTime: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 });
 
+
+const Announcement = sequelize.define('Announcements', {
+    AnnouncementId: {type: DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+    Body: {
+        type: DataTypes.TEXT, allowNull:false
+    },
+    Date: {
+        type: DataTypes.DATE, allowNull:false, defaultValue: DataTypes.NOW
+    }
+})
+
 // Define associations
 Users.hasMany(BookingEquipment, { foreignKey: "Uid" });
 BookingEquipment.belongsTo(Users, { foreignKey: "Uid" });
@@ -93,8 +105,8 @@ Penalties.belongsTo(Users, { foreignKey: 'Uid' });
 Users.hasMany(Bookings, { foreignKey: 'studentId' });
 Bookings.belongsTo(Users, { foreignKey: 'studentId' });
 
-Facility.hasMany(Bookings, { foreignKey: 'Fid' });
-Bookings.belongsTo(Facility, { foreignKey: 'Fid' });
+Facility.hasMany(Bookings, { foreignKey: 'facilityId' });
+Bookings.belongsTo(Facility, { foreignKey: 'facilityId' });
 
 Users.hasMany(Notification, { foreignKey: 'Uid', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Notification.belongsTo(Users, { foreignKey: 'Uid', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
