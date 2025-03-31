@@ -50,3 +50,4 @@ References
 5. Vite- https://vite.dev/guide/
 6. For components/styling -https://daisyui.com/
 7. JWT- https://www.npmjs.com/package/jsonwebtoken
+8. sequelize as an orm
