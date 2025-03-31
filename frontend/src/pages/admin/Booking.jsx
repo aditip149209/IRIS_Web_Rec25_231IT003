@@ -116,10 +116,7 @@ function Booking() {
     localStorage.removeItem("token");
     navigate("/");    
   }
-
-
-
-
+  
   return (
     <div className="flex h-screen">
     {/* Sidebar */}

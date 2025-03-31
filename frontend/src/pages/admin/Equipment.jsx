@@ -275,7 +275,7 @@ function Equipment() {
           className="input input-bordered w-full mb-4"
           value={sport}
           onChange={(e) => setSport(e.target.value)}
-          placeholder="Enter new equipment name"
+          placeholder="Enter sport name"
         />
 
       <div className="flex items-center gap-4">

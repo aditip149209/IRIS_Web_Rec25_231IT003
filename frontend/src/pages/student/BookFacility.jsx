@@ -130,6 +130,13 @@ function BookFacility() {
         }
     };
     
+
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
     
     const handleSlotChange = (event) => {
         const selectedSlot = event.target.value;
@@ -208,7 +215,7 @@ function BookFacility() {
     return (
         <div className='flex h-screen'>
      
-            <aside className="w-64 bg-gray-700 text-white p-5 items-center flex flex-col">
+            <aside className="w-64 bg-gray-900 text-white p-5 items-center flex flex-col">
   <h1 className="text-3xl font-bold mb-6">Menu</h1>
   <nav className="flex flex-col items-center justify-center ">
   <ul className="flex flex-col items-center">
@@ -244,16 +251,19 @@ function BookFacility() {
                 📜 My Bookings
               </Link>
             </li>
+            <li>
+            <button className = "btn btn-primary hover: bg-primary hover: text-white" onClick={handleLogout}>Logout</button>
+          </li>
           </ul>    
   </nav>
 </aside>
-   <div className="w-full flex justify-center items-center h-screen bg-gray-900">
-            <div className="w-1/3 bg-black p-6 rounded-lg shadow-lg">
+   <div className="w-full flex justify-center items-center h-screen bg-gray-700">
+            <div className="w-1/3 bg-slate-800 p-6 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold text-center mb-6 text-white">Book Facility</h2>
                 <form className='w-full' onSubmit={handleSubmit}>
                     <div>
                         <label className="text-white">Select a Sport:</label>
-                        <select className="w-full p-2 border border-gray-400 bg-black text-white rounded-md"
+                        <select className="input input-bordered w-full my-2"
                             value={selectedSport} onChange={handleSportChange}>
                             <option value="">-- Select Sport --</option>
                             {sports.map((sport, index) => (
@@ -264,7 +274,7 @@ function BookFacility() {
 
                     <div>
                         <label className="text-white">Select Facility:</label>
-                        <select className="w-full p-2 border border-gray-400 bg-black text-white rounded-md"
+                        <select className="input input-bordered w-full my-2"
                             value={facility} onChange={(e) => setFacility(e.target.value)} disabled={!selectedSport}>
                             <option value="">Choose a Facility</option>
                             {availableFacilities.map((f, index) => (
@@ -275,13 +285,13 @@ function BookFacility() {
 
                     <div>
                         <label className="text-white">Select Date:</label>
-                        <input type="date" className="w-full p-2 border border-gray-400 rounded-md"
+                        <input type="date" className="input input-bordered w-full my-2"
                             value={date} onChange={(e) => setDate(e.target.value)} disabled={!facility} />
                     </div>
 
                     <div>
                         <label className="text-white">Select Time Slot:</label>
-                        <select className="w-full p-2 border border-gray-400 bg-black text-white rounded-md"
+                        <select className="input input-bordered w-full my-2"
                             value={selectedSlot}
                             onChange={handleSlotChange}
                             disabled={!date || availableSlots.length === 0}>

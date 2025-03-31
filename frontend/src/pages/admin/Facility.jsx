@@ -184,7 +184,7 @@ function Facility() {
           className="input input-bordered w-full mb-4"
           value={newFacility}
           onChange={(e) => setNewFacility(e.target.value)}
-          placeholder="Enter new equipment name"
+          placeholder="Enter new facility name"
         />
 
       <label className="block mb-2 text-lg font-medium">Sport Name:</label>
@@ -200,7 +200,7 @@ function Facility() {
           <input 
             type="text"
             className="input input-bordered w-full mb-4"
-            value={sport}
+            value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Enter location name"
           /> 
@@ -209,9 +209,9 @@ function Facility() {
           <input 
             type="text"
             className="input input-bordered w-full mb-4"
-            value={sport}
+            value={type}
             onChange={(e) => setType(e.target.value)}
-            placeholder="Enter new facility name"
+            placeholder="Enter type of facility"
           /> 
       <button type="submit" className="btn btn-warning mt-4" onClick={handleAdd}>Add Facility</button>
     </form>

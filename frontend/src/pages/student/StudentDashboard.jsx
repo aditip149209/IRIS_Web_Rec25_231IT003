@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 
 const StudentDashboard = () => {
@@ -46,6 +47,14 @@ const StudentDashboard = () => {
       console.log(bookings);
     }
   })
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
 
 
   useEffect(() =>{
@@ -118,6 +127,9 @@ const StudentDashboard = () => {
                 📜 My Bookings
               </Link>
             </li>
+            <li>
+            <button className = "btn btn-primary hover: bg-primary hover: text-white" onClick={handleLogout}>Logout</button>
+          </li>
           </ul>    
   </nav>
 </aside>

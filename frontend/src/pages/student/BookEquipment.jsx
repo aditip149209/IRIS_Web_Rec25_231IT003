@@ -62,6 +62,12 @@ function BookEquipment() {
 
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+
   return (
     <div className='flex h-screen'>
       <aside className="w-64 bg-gray-900 text-white p-5 items-center flex flex-col">
@@ -100,6 +106,9 @@ function BookEquipment() {
                 📜 My Bookings
               </Link>
             </li>
+            <li>
+            <button className = "btn btn-primary hover: bg-primary hover: text-white" onClick={handleLogout}>Logout</button>
+          </li>
           </ul>    
   </nav>
 </aside>
@@ -138,6 +147,7 @@ function BookEquipment() {
             value={quantity}
             min="1"
             onChange={(e) => setQuantity(e.target.value)}
+            disabled={!eqID}
           />
 
           {/* Start Date */}
@@ -147,6 +157,7 @@ function BookEquipment() {
             className="input input-bordered w-full my-2"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
+            disabled={!eqID && !quantity}
           />
 
           {/* End Date */}
@@ -156,6 +167,7 @@ function BookEquipment() {
             className="input input-bordered w-full my-2"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+            disabled={!eqID && !quantity && !startDate}
           />
 
           {/* Submit Button */}
