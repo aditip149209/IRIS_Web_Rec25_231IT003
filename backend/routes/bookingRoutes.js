@@ -16,7 +16,7 @@ bookingRouter.get("/booking/facilities", protect, getFacilities);
 bookingRouter.post('/booking/bookequipment',protect, authorizeRoles("Admin", "Student"), bookEquipment);
 bookingRouter.get('/booking/userbookings', protect, authorizeRoles("Admin","Student"), getBookings);
 bookingRouter.delete('/booking/deletebookings', protect, authorizeRoles("Admin", "Student"), deletebooking);
-bookingRouter.get('/booking/bookequipment/equipmentlist', protect, authorizeRoles("Student"), getEquipmentList);
+bookingRouter.get('/booking/bookequipment/equipmentlist', protect, authorizeRoles("Student", "Admin"), getEquipmentList);
 bookingRouter.get('booking/bookequipment/equipmentQuantity', protect, authorizeRoles("Student", "Admin"), getEquipmentQuantity);
 bookingRouter.get('/booking/bookequipment/equipmentBookings', protect, authorizeRoles("Admin", "Student"), getEqBookings);
 

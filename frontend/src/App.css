@@ -1,0 +1,31 @@
+* Prevent body from scrolling */
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure the main section scrolls */
+.main-section {
+    /* Full viewport height */
+    overflow-y: auto; /* Enables vertical scrolling */
+    
+}
+
+/* Customize the scrollbar */
+.main-section::-webkit-scrollbar {
+    width: 10px; /* Width of the scrollbar */
+}
+
+.main-section::-webkit-scrollbar-track {
+    background: gray; /* Background of the scrollbar track */
+}
+
+.main-section::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Rounded corners for the thumb */
+}
+
+.main-section::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color when hovering over the thumb */
+}

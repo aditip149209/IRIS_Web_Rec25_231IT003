@@ -37,7 +37,7 @@ const Facility = sequelize.define('Facility', {
     Fid: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
     sport: {type: DataTypes.STRING, allowNull:false },
-    type: { type: DataTypes.ENUM("court", "field", "gym", "pool"), allowNull: false },
+    type: { type: DataTypes.ENUM("court", "field", "gym", "pool", "indoor", "range"), allowNull: false },
     location: { type: DataTypes.STRING, allowNull: true },
     status: { type: DataTypes.ENUM('available', 'booked', 'maintenance', 'reserved'), allowNull: false, defaultValue: 'available' }
 });
@@ -93,8 +93,8 @@ const Announcement = sequelize.define('Announcements', {
 })
 
 // Define associations
-Users.hasMany(BookingEquipment, { foreignKey: "Uid" });
-BookingEquipment.belongsTo(Users, { foreignKey: "Uid" });
+Users.hasMany(BookingEquipment, { foreignKey: "StudentID" , onDelete: "CASCADE"});
+BookingEquipment.belongsTo(Users, { foreignKey: "StudentID" });
 
 Equipment.hasMany(BookingEquipment, { foreignKey: "EqId", onDelete: "CASCADE" });
 BookingEquipment.belongsTo(Equipment, { foreignKey: "EqId" });

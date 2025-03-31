@@ -1,5 +1,6 @@
 import db from "../models/index.js";
 import { InsertNewEquipment, updateEq, deleteEquip, updateFac, deleteFac, InsertNewFac } from "../models/services/FacEq.js";
+import { Op, fn, col, literal } from "sequelize";
 
 const adminBoard = (req,res) => {
     return res.status(200).json({
@@ -272,20 +273,234 @@ const showEquipmentCount = async(req, res) =>{
     
 }
 
+const showAllBookings = async (req,res) => {
+    try{
+        const bookingsList = await db.Bookings.findAll({
+            include: [
+                {
+                    model: db.Users,
+                    attributes: ['UName']
+                },
+                {
+                    model: db.Facility,
+                    attributes: ['name']
+                }
+            ]
+        });
+        return res.status(200).json({
+            bookingsList
+        })
+    }
+    catch(error){
+        return res.status(500).json({
+            message: "server error"
+        })
+    }
+}
+
+const changeStatus = async (req, res) => {
+    const { bookingId, status } = req.body;
+
+    if (!bookingId || !status) {
+        return res.status(400).json({ message: "Booking ID or status field is empty" });
+    }
+
+    try {
+        // ✅ Await the database update
+        const updatedRows = await db.Bookings.update(
+            { status },
+            { where: { id: bookingId } }
+        );
+
+        // ✅ Check if the booking exists
+        if (updatedRows[0] === 0) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        return res.status(200).json({ message: "Booking status updated successfully" });
+
+    } catch (error) {
+        console.error("Error updating booking:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+const showAllEqBookings = async (req, res) => {
+    try{
+        const bookingsEqList = await db.BookingEquipment.findAll({
+            include: [
+                {
+                    model: db.Users,
+                    attributes: ['UName']
+                },
+                {
+                    model: db.Equipment,
+                    attributes: ['Ename']
+                }
+            ]
+        });
+        return res.status(200).json({
+            bookingsEqList
+        })
+    }
+    catch(error){
+        return res.status(500).json({
+            message: "Server error while fetching equipment bookings"
+        })
+    }
+}
+
+const deleteBooking = async (req, res) => {
+    const bookingid = req.query.bookingId;
+    if(!bookingid){
+        return res.status(400).json({
+            message: "Enter booking id"
+        })
+    }
+    try{
+        const delelefacbooking = await db.Bookings.destroy({
+            where: {id: bookingid}
+        })
+        return res.status(200).json({
+            message: "YOu deleted the booking yay"
+        })
+    }
+    catch(error){
+        return res.status(500).json({
+            message: "Server error while deleting booking"
+        })
+    }
+}
 const totalBookings = async (req, res) => {
-
+    try{
+        const count = await db.Bookings.count();
+        return res.status(200).json(count);
+    }
+    catch(error){
+        return res.status(500).json({
+            message: "There was a server error"
+        })
+    }    
 }
 
-const mostActive = async(req, res) =>{
-
+const totalEqBookings = async (req, res) => {
+    try{
+        const count = await db.BookingEquipment.count();
+        return res.status(200).json(count);
+    }
+    catch(error){
+        return res.status(500).json({
+            message: "There was a server error"
+        })
+    }
 }
 
-const popularEquipmentNFacilities = async (req, res) => {
+const mostActive = async (req, res) => {
+    try{
+    let activeUsers = await db.Bookings.findAll({
+        attributes: [
+            'studentId',
+            [fn('COUNT', col('id')), 'booking_count']
+        ],
+        include: [{
+            model: db.Users,
+            attributes: ['UName']
+    }],
 
-}
+        group: ['studentId'],
+        order: [[literal('booking_count'), 'DESC']],
+        limit: 5
+    });
+
+    activeUsers = activeUsers.map(row => row.dataValues);
+    return res.status(200).json(activeUsers);
+    }
+    catch(error){
+        return res.status(500).json(
+            console.log(error)
+        )
+    }
+};
+
+const popularEquipment = async (req, res) => {
+    try{
+    let topEquipments = await db.Equipment.findAll({
+        attributes: ['Ename', 'UsageCount'],
+        order: [[literal('UsageCount'), 'DESC']],
+        limit: 5
+    });
+
+    topEquipments= topEquipments.map(row => row.dataValues);
+    return res.status(200).json(topEquipments);
+    }
+    catch(error){
+        return res.status(500).json({
+            message: error
+        })
+    }
+};
+
+
 
 const getPeakHours = async (req, res) => {
+    try {
+        // Fetch booking count grouped by hour
+        let usageData = await db.Bookings.findAll({
+            attributes: [
+                [fn("HOUR", col("startTime")), "hour"],
+                [fn("COUNT", col("id")), "booking_count"]
+            ],
+            group: [fn("HOUR", col("startTime"))],
+            order: [[literal("hour"), "ASC"]]
+        });
 
-}
+        // Convert results to a map for easier lookup
+        let usageMap = new Map(
+            usageData.map(row => [row.dataValues.hour, row.dataValues.booking_count])
+        );
 
-export {showEquipmentCount, adminBoard, addEquipment, updateEquipment, deleteEquipment, showAnalytics, addFacility, showEquipment, showFacility, deleteFacility, updateFacility, totalBookings, mostActive, popularEquipmentNFacilities, getPeakHours};
+        // Generate full 24-hour dataset
+        let fullData = Array.from({ length: 24 }, (_, hour) => ({
+            hour,
+            booking_count: usageMap.get(hour) || 0  // Default to 0 if hour not found
+        }));
+
+        return res.status(200).json(fullData);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
+const getMostBookedFacilities = async (req, res) => {
+    try{
+    let topFacilities = await db.Bookings.findAll({
+        attributes: [
+            'facilityId',
+            [fn('COUNT', col('id')), 'booking_count']
+        ],
+        group: ['facilityId'],
+        order: [[literal('booking_count'), 'DESC']],
+        limit: 5,
+        include: [{ model: db.Facility, attributes: ['name'] }] // Join to get facility name
+    });
+
+    topFacilities=  topFacilities.map(row => ({
+        facilityId: row.facilityId,
+        name: row.Facility.name,
+        booking_count: row.dataValues.booking_count
+    }));
+    return res.status(200).json(topFacilities);
+    }
+    catch(error){
+        return res.status(500).json(
+            console.log(error)
+        )
+    }
+};
+
+
+export {showEquipmentCount,totalEqBookings, adminBoard, addEquipment, changeStatus, updateEquipment, deleteBooking, showAllBookings,showAllEqBookings, deleteEquipment, showAnalytics, addFacility, showEquipment, showFacility, 
+    deleteFacility, updateFacility, totalBookings, mostActive, popularEquipment, getPeakHours, getMostBookedFacilities};

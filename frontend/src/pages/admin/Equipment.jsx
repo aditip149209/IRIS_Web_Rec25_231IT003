@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Equipment() {
@@ -141,10 +141,17 @@ function Equipment() {
     }
   };
 
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  }
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white text-center p-10 flex flex-col">
+      <aside className="w-72 bg-gray-900 text-white text-center p-10 flex flex-col">
         <h1 className="text-3xl font-bold mb-6">Menu</h1>
         <nav className="flex flex-col">
           <ul className="space-y-3">
@@ -164,10 +171,18 @@ function Equipment() {
               </Link>
             </li>
             <li>
-              <Link to="/admin/booking" className="btn btn-ghost bg-primary text-white">
+              <Link to="/admin/booking" className="btn btn-ghost hover:bg-gray-600 hover:text-white">
                 📅 Manage Bookings
               </Link>
             </li>
+             <li>
+                          <Link to="/studentdashboard" className="btn btn-ghost hover:bg-gray-600 hover:text-white">
+                            Switch to Student View
+                          </Link>
+                        </li>
+            <li>
+            <button className = "btn btn-primary hover: bg-primary hover: text-white" onClick={handleLogout}>Logout</button>
+          </li>
           </ul>
         </nav>
       </aside>

@@ -95,7 +95,7 @@ const [refresh, setRefresh] = useState(false);
           </ul>    
   </nav>
 </aside>
-    <div className="w-full flex flex-col items-center bg-gray-900 min-h-screen p-6">
+    <div className="w-full flex flex-col items-center bg-gray-900 min-h-screen p-6 main-section">
       <h1 className="text-2xl font-bold text-white mb-6">All Bookings</h1>
 
       <div className="w-full max-w-4xl">

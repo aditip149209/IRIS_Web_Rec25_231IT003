@@ -96,10 +96,17 @@ function Facility() {
     }
   };    
 
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  }
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white text-center p-10 flex flex-col">
+      <aside className="w-72 bg-gray-900 text-white text-center p-10 flex flex-col">
         <h1 className="text-3xl font-bold mb-6">Menu</h1>
         <nav className="flex flex-col">
           <ul className="space-y-3">
@@ -119,15 +126,23 @@ function Facility() {
               </Link>
             </li>
             <li>
-              <Link to="/admin/booking" className="btn btn-ghost bg-primary text-white">
+              <Link to="/admin/booking" className="btn btn-ghost hover:bg-gray-600 hover:text-white">
                 📅 Manage Bookings
               </Link>
             </li>
+            <li>
+              <Link to="/studentdashboard" className="btn btn-ghost hover:bg-gray-600 hover:text-white">
+                Switch to Student View
+              </Link>
+            </li>
+            <li>
+            <button className = "btn btn-primary hover: bg-primary hover: text-white" onClick={handleLogout}>Logout</button>
+          </li>
           </ul>
         </nav>
       </aside>
 
-      <div className="flex-1 bg-gray-100 p-10">
+      <div className="flex-1 bg-gray-100 p-10 overflow-y-auto">
         <header className="text-3xl text-black font-bold mb-6">Manage Equipment</header>
 
         <div className="flex gap-4 mb-6">
@@ -151,8 +166,11 @@ function Facility() {
           <option key={index} value={facility}>{facility}</option>
         ))}
       </select>
-      <button className="btn btn-warning" onClick={handleReserve('reserved')}>Mark as Reserved</button>
-      <button className='btn btn-warning' onClick={handleReserve('maintenance')}>Mark as Under Maintenance</button>
+      <div className=' flex gap-2'>
+      <button className="btn btn-warning" onClick={()=> handleReserve('reserved')}>Mark as Reserved</button>
+      <button className='btn btn-warning' onClick={() => handleReserve('maintenance')}>Mark as Under Maintenance</button>
+      </div>
+
     </form>
   </div>
 )}

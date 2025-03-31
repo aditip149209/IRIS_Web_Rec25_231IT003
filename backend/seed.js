@@ -11,19 +11,27 @@ const hashPassword = async (password) => {
 
 const seedDatabase = async () => {
     try {
-        await sequelize.sync({ force: true }); // WARNING: Deletes existing data!
+        await sequelize.sync({ force: true });
 
         console.log("Database synced!");
 
-        // Seed Users
         const usersData = [
-            { UName: "Aditi Sharma", Email: "aditi@example.com", Password: "Password1!", Branch: "CSE", Role: "Student" },
-            { UName: "Rohan Mehta", Email: "rohan@example.com", Password: "Password2!", Branch: "ECE", Role: "Student" },
-            { UName: "Ananya Singh", Email: "ananya@example.com", Password: "Password3!", Branch: "Mechanical", Role: "Student" },
-            { UName: "Admin User", Email: "admin@example.com", Password: "AdminPassword1!", Branch: "Admin", Role: "Admin" }
+            ...Array.from({ length: 20 }, (_, i) => ({
+                UName: `Student ${i + 1}`,
+                Email: `student${i + 1}@example.com`,
+                Password: `StudentPass${i + 1}!`,
+                Branch: ["CSE", "ECE", "Mechanical", "Civil", "Electrical"][i % 5],
+                Role: "Student"
+            })),
+            ...Array.from({ length: 5 }, (_, i) => ({
+                UName: `Admin ${i + 1}`,
+                Email: `admin${i + 1}@example.com`,
+                Password: `AdminPass${i + 1}!`,
+                Branch: "Admin",
+                Role: "Admin"
+            }))
         ];
 
-        // Hash passwords in parallel
         const users = await Promise.all(usersData.map(async (user) => ({
             ...user,
             Password: await hashPassword(user.Password),
@@ -32,95 +40,103 @@ const seedDatabase = async () => {
         const createdUsers = await db.Users.bulkCreate(users);
         console.log("Users seeded!");
 
-        // Seed Facilities
         const facilities = [
             { name: "Basketball Court", sport: "Basketball", type: "court", location: "Block A - 2nd Floor", status: "available" },
             { name: "Football Field", sport: "Football", type: "field", location: "Block B - Ground", status: "available" },
             { name: "Tennis Court", sport: "Tennis", type: "court", location: "Block C - 1st Floor", status: "maintenance" },
             { name: "Gymnasium", sport: "Gym", type: "gym", location: "Sports Complex", status: "available" },
-            { name: "Swimming Pool", sport: "Swimming", type: "pool", location: "Block D", status: "reserved" }
+            { name: "Swimming Pool", sport: "Swimming", type: "pool", location: "Block D", status: "reserved" },
+            { name: "Badminton Court", sport: "Badminton", type: "court", location: "Block E - 3rd Floor", status: "available" },
+            { name: "Cricket Ground", sport: "Cricket", type: "field", location: "Block F - Ground", status: "available" },
+            { name: "Table Tennis Hall", sport: "Table Tennis", type: "indoor", location: "Sports Complex - 1st Floor", status: "available" },
+            { name: "Archery Range", sport: "Archery", type: "range", location: "Outdoor Arena", status: "maintenance" },
+            { name: "Volleyball Court", sport: "Volleyball", type: "court", location: "Block G - Roof", status: "available" }
         ];
 
         const createdFacilities = await db.Facility.bulkCreate(facilities);
         console.log("Facilities seeded!");
 
-        // Seed Equipment
+
         const equipment = [
             { Ename: "Basketball", Sport: "Basketball", StatusAvailable: 10, StockCount: 10, UsageCount: 5 },
             { Ename: "Football", Sport: "Football", StatusAvailable: 8, StockCount: 8, UsageCount: 3 },
             { Ename: "Tennis Racket", Sport: "Tennis", StatusAvailable: 15, StockCount: 15, UsageCount: 7 },
             { Ename: "Gym Weights", Sport: "Gym", StatusAvailable: 20, StockCount: 20, UsageCount: 10 },
-            { Ename: "Swimming Goggles", Sport: "Swimming", StatusAvailable: 12, StockCount: 12, UsageCount: 4 }
+            { Ename: "Swimming Goggles", Sport: "Swimming", StatusAvailable: 12, StockCount: 12, UsageCount: 4 },
+            { Ename: "Badminton Shuttle", Sport: "Badminton", StatusAvailable: 30, StockCount: 30, UsageCount: 15 },
+            { Ename: "Cricket Bat", Sport: "Cricket", StatusAvailable: 5, StockCount: 5, UsageCount: 2 },
+            { Ename: "Table Tennis Paddle", Sport: "Table Tennis", StatusAvailable: 25, StockCount: 25, UsageCount: 10 },
+            { Ename: "Archery Bow", Sport: "Archery", StatusAvailable: 6, StockCount: 6, UsageCount: 3 },
+            { Ename: "Volleyball", Sport: "Volleyball", StatusAvailable: 10, StockCount: 10, UsageCount: 5 }
         ];
-    
+
         const createdEquipment = await db.Equipment.bulkCreate(equipment);
-        db.Equipment.update({ StatusAvailable : Sequelize.literal('StockCount')
-        }, { where: { } });
         console.log("Equipment seeded!");
 
-        // Seed Bookings
-        const bookings = [
-            { studentId: createdUsers[0].Uid, Sport: "Basketball", facilityId: createdFacilities[0].Fid, date: "2025-03-25", startTime: "10:00:00", endTime: "11:00:00", status: "approved" },
-            { studentId: createdUsers[1].Uid, Sport: "Football", facilityId: createdFacilities[1].Fid, date: "2025-03-26", startTime: "16:00:00", endTime: "17:00:00", status: "approved" },
-            { studentId: createdUsers[2].Uid, Sport: "Tennis", facilityId: createdFacilities[2].Fid, date: "2025-03-27", startTime: "08:00:00", endTime: "09:00:00", status: "pending" },
-            { studentId: createdUsers[0].Uid, Sport: "Gym Workout", facilityId: createdFacilities[3].Fid, date: "2025-03-28", startTime: "18:00:00", endTime: "19:00:00", status: "approved" }
-        ];
+        const timeSlots = ["06:00:00", "07:00:00", "08:00:00", "16:00:00", "17:00:00", "18:00:00", "19:00:00", "20:00:00"];
+
+        const bookings = createdUsers.slice(0, 15).map((user, index) => {
+            const startTime = timeSlots[index % timeSlots.length]; 
+            const endTime = `${(parseInt(startTime.split(":")[0]) + 1).toString().padStart(2, '0')}:00:00`; 
+        
+            return {
+                studentId: user.Uid,
+                Sport: facilities[index % facilities.length].sport,
+                facilityId: createdFacilities[index % createdFacilities.length].Fid,
+                date: `2025-03-${15 + Math.floor(index / timeSlots.length)}`,
+                startTime,
+                endTime,
+                status: ["approved", "pending", "rejected"][index % 3]
+            };
+        });        
 
         await db.Bookings.bulkCreate(bookings);
         console.log("Bookings seeded!");
 
-        // Seed Booking Equipment
-        const bookingEquipment = [
-            { StudentID: createdUsers[0].Uid, EqId: createdEquipment[0].EqId, Quantity: 2, StartDate: "2025-03-25", EndDate: "2025-03-26", Status: "ongoing" },
-            { StudentID: createdUsers[1].Uid, EqId: createdEquipment[1].EqId, Quantity: 1, StartDate: "2025-03-26", EndDate: "2025-03-27", Status: "ongoing" },
-            { StudentID: createdUsers[2].Uid, EqId: createdEquipment[2].EqId, Quantity: 3, StartDate: "2025-03-27", EndDate: "2025-03-28", Status: "ongoing" }
-        ];
+
+        const bookingEquipment = createdUsers.slice(0, 10).map((user, index) => ({
+            StudentID: user.Uid,
+            EqId: createdEquipment[index % 10].EqId,
+            Quantity: Math.floor(Math.random() * 5) + 1,
+            StartDate: `2025-03-${15 + index}`,
+            EndDate: `2025-03-${16 + index}`,
+            Status: "ongoing"
+        }));
 
         await db.BookingEquipment.bulkCreate(bookingEquipment);
         console.log("Booking Equipment seeded!");
 
-        // Seed Notifications
-        const notifications = [
-            { 
-                Uid: createdUsers[0].Uid, 
-                BookingId: bookings[0].studentId, // Associate with the first booking
-                Message: "Your basketball booking is confirmed.", 
-                Status: "pending" 
-            },
-            { 
-                Uid: createdUsers[1].Uid, 
-                BookingId: bookings[1].studentId, // Associate with the second booking
-                Message: "Your football booking is confirmed.", 
-                Status: "pending" 
-            },
-            { 
-                Uid: createdUsers[2].Uid, 
-                BookingId: bookings[2].studentId, // Associate with the third booking
-                Message: "Your tennis booking is pending approval.", 
-                Status: "pending" 
-            }
-        ];
+        const notifications = bookings.slice(0, 10).map((booking, index) => ({
+            Uid: booking.studentId,
+            BookingId: booking.studentId,
+            Message: `Your booking for ${booking.Sport} is ${booking.status}.`,
+            Status: "pending"
+        }));
 
         await db.Notification.bulkCreate(notifications);
         console.log("Notifications seeded!");
 
-        // Seed Penalties
-        const penalties = [
-            { Uid: createdUsers[0].Uid, Reason: "noshow", PenaltyType: "warning", StartDate: "2025-03-01", EndDate: "2025-03-07" },
-            { Uid: createdUsers[1].Uid, Reason: "other", PenaltyType: "temporary_ban", StartDate: "2025-03-10", EndDate: "2025-03-20" }
-        ];
+
+        const penalties = createdUsers.slice(0, 5).map((user, index) => ({
+            Uid: user.Uid,
+            Reason: ["noshow", "other"][index],
+            PenaltyType: ["warning", "temporary_ban", "permanent_ban"][index],
+            StartDate: "2025-03-01",
+            EndDate: "2025-03-07"
+        }));
 
         await db.Penalties.bulkCreate(penalties);
         console.log("Penalties seeded!");
 
-        
-
-        // Seed Waitlist
-        const waitlist = [
-            { Uid: createdUsers[0].Uid, EqId: createdEquipment[3].EqId, FacId: createdFacilities[0].Fid, Date: "2025-03-24", startTime: "10:00:00" , endTime: "11:00:00", CreationTime: "2025-03-24" },
-            { Uid: createdUsers[1].Uid, EqId: createdEquipment[4].EqId, FacId: createdFacilities[1].Fid, Date: "2025-03-25", startTime: "17:00:00", endTime: "18:00:00", CreationTime: "2025-03-25" }
-        ];
-        
+        const waitlist = createdUsers.slice(0, 5).map((user, index) => ({
+            Uid: user.Uid,
+            EqId: createdEquipment[index % 10].EqId,
+            FacId: createdFacilities[index % 10].Fid,
+            Date: "2025-03-24",
+            startTime: "10:00:00",
+            endTime: "11:00:00",
+            CreationTime: "2025-03-24"
+        }));
 
         await db.Waitlist.bulkCreate(waitlist);
         console.log("Waitlist seeded!");

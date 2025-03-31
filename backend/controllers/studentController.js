@@ -105,7 +105,9 @@ const bookNew = async (req, res) => {
             status: "pending"
         });
 
-        await sendMail(user.email, "Booking Confirmation",
+        const myemail = "aditip149209@gmai.com";
+
+        await sendMail(myemail, "Booking Confirmation",
             `Dear ${user.name},\n\nYour booking for ${sport} at ${facilityId} on ${date} from ${startTime} to ${formattedEndTime} has been confirmed.\n\nEnjoy your game!\n\nRegards,\nSports Booking System`);
 
         return res.json({ message: "Booking successful", booking: newBook });
