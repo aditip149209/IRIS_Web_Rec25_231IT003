@@ -143,7 +143,7 @@ function Facility() {
       </aside>
 
       <div className="flex-1 bg-gray-100 p-10 overflow-y-auto">
-        <header className="text-3xl text-black font-bold mb-6">Manage Equipment</header>
+        <header className="text-3xl text-black font-bold mb-6">Manage Facility</header>
 
         <div className="flex gap-4 mb-6">
           <button onClick={() => setMode('add')} className="btn btn-primary">➕ Add Facility</button>
