@@ -1,42 +1,31 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+* Prevent body from scrolling */
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Ensure the main section scrolls */
+.main-section {
+    /* Full viewport height */
+    overflow-y: auto; /* Enables vertical scrolling */
+    
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Customize the scrollbar */
+.main-section::-webkit-scrollbar {
+    width: 10px; /* Width of the scrollbar */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.main-section::-webkit-scrollbar-track {
+    background: gray; /* Background of the scrollbar track */
 }
 
-.card {
-  padding: 2em;
+.main-section::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Rounded corners for the thumb */
 }
 
-.read-the-docs {
-  color: #888;
+.main-section::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color when hovering over the thumb */
 }
