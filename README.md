@@ -5,7 +5,9 @@ Installation Steps
 1. Clone this repository
 2. Go to the frontend folder, run 'npm i' to install frontend dependencies
 3. Go to the backend folder, run 'npm i' to install backend dependencies
-4. Create a .env file in the project's root directory and add the required database details: DB_NAME=your_database_name DB_USER=your_username DB_PASSWORD=your_password DB_HOST=localhost DB_DIALECT=mysql Since mysql was used in this project, use mysql ideally. Else, replace DB_DIALECT with the dialect name of your database software. Accordingly, fill in your database name, username and password.
+4. Create a .env file in the project's root directory and add the required database details: DB_NAME=your_database_name DB_USER=your_username DB_PASSWORD=your_password DB_HOST=localhost DB_DIALECT=mysql Since mysql was used in this project, use mysql ideally. Else, replace DB_DIALECT with the dialect name of your database software. Accordingly, fill in your database name, username and password. Just follow the screenshot below.
+   ![image](https://github.com/user-attachments/assets/1337c81e-9e9a-44f1-87e1-ade64d26fa89)
+
 
 Run the project by following these steps:
 
